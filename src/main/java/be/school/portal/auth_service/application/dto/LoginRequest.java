@@ -1,5 +1,10 @@
 package be.school.portal.auth_service.application.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
-public record LoginRequest(@NotBlank String username, @NotBlank String password) {}
+@Schema(name = "LoginRequest", description = "Request payload for user login")
+public record LoginRequest(
+    @NotBlank @Schema(description = "Username of the user", example = "john.doe") String username,
+    @NotBlank @Schema(description = "Password of the user", example = "P@ssw0rd")
+        String password) {}

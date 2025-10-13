@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.application.tracer;
+package be.school.portal.auth_service.application.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

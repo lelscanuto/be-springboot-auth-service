@@ -2,7 +2,8 @@ package be.school.portal.auth_service.application.aspect;
 
 import be.school.portal.auth_service.application.dto.LoginRequest;
 import be.school.portal.auth_service.application.services.LoginAttemptService;
-import be.school.portal.auth_service.common.exceptions.InvalidPasswordException;
+import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
+import be.school.portal.auth_service.common.exceptions.LoginException;
 import be.school.portal.auth_service.common.exceptions.UserInvalidStateException;
 import be.school.portal.auth_service.domain.enums.LoginAction;
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +29,17 @@ public class LoginTrackerAspect {
   }
 
   @AfterThrowing(value = "@annotation(trackLogin) && args(loginRequest,..)", throwing = "ex")
-  public void afterFailure(LoginRequest loginRequest, InvalidPasswordException ex) {
-    loginAttemptService.recordFailure(
-        loginRequest.username(), LoginAction.LOGIN_FAILED_INVALID_CREDENTIAL);
+  public void afterFailure(LoginRequest loginRequest, LoginException ex) {
+    loginAttemptService.recordFailure(loginRequest.username(), getLoginActionFromException(ex));
   }
 
-  @AfterThrowing(value = "@annotation(trackLogin) && args(loginRequest,..)", throwing = "ex")
-  public void afterUserNotValid(LoginRequest loginRequest, UserInvalidStateException ex) {
-    loginAttemptService.recordFailure(
-        loginRequest.username(), LoginAction.LOGIN_FAILED_INVALID_STATE);
+  private LoginAction getLoginActionFromException(LoginException ex) {
+    if (ex instanceof InvalidCredentialException) {
+      return LoginAction.LOGIN_FAILED_INVALID_CREDENTIAL;
+    } else if (ex instanceof UserInvalidStateException) {
+      return LoginAction.LOGIN_FAILED_INVALID_STATE;
+    }
+
+    throw new UnsupportedOperationException(" Unsupported exception type: " + ex.getClass());
   }
 }

@@ -1,6 +1,6 @@
 package be.school.portal.auth_service.application.listener;
 
-import be.school.portal.auth_service.application.use_case.UserLockUseCase;
+import be.school.portal.auth_service.application.use_cases.UserLockUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
