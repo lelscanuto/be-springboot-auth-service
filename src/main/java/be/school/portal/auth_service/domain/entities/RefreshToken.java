@@ -14,20 +14,25 @@ public class RefreshToken {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Setter(AccessLevel.NONE)
-  private Long id; // DB primary key
+  private Long id;
 
-  @Column(nullable = false)
+  @Column(name = "issued_at", nullable = false)
   private ZonedDateTime issuedAt;
 
-  @Column(nullable = false)
+  @Column(name = "expires_at", nullable = false)
   private ZonedDateTime expiresAt;
 
-  @Column(length = 255)
-  private String deviceInfo; // optional, e.g., "iPhone 15"
+  @Column(name = "device_info", nullable = false)
+  private String deviceInfo;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
-  private UserAccount user; // reference to User aggregate root
+  private UserAccount user;
+
+  @Column(name = "revoked", nullable = false)
+  @Getter(AccessLevel.NONE)
+  @Setter(AccessLevel.NONE)
+  private Boolean revoked = false;
 
   private RefreshToken(RefreshTokenBuilder builder) {
     this.id = builder.id;
@@ -35,6 +40,14 @@ public class RefreshToken {
     this.expiresAt = builder.expiresAt;
     this.deviceInfo = builder.deviceInfo;
     this.user = builder.user;
+  }
+
+  public boolean isActive() {
+    return !this.revoked;
+  }
+
+  public void revoke() {
+    this.revoked = true;
   }
 
   public static final class RefreshTokenBuilder {

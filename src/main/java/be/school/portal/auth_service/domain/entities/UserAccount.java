@@ -71,4 +71,17 @@ public class UserAccount {
   public boolean isActive() {
     return this.status == UserStatus.ACTIVE;
   }
+
+  public RefreshToken getRefreshTokensWithId(long refreshTokenId) {
+    return this.refreshTokens.stream()
+        .filter(rt -> rt.getId() == refreshTokenId && rt.isActive())
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+  }
+
+  public void revokeTokenWith(long refreshTokenId) {
+    final var refreshToken = getRefreshTokensWithId(refreshTokenId);
+
+    refreshToken.revoke();
+  }
 }

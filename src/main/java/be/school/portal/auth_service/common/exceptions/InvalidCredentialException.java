@@ -31,6 +31,6 @@ public class InvalidCredentialException extends LoginException implements CodedE
   @Nonnull
   @Override
   public ErrorCode getErrorCode() {
-    return ErrorCode.INVALID_PASSWORD;
+    return ErrorCode.USER_INVALID_CREDENTIAL;
   }
 }

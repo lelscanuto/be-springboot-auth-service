@@ -13,6 +13,10 @@ import java.time.ZonedDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service implementation for creating JWT access and refresh tokens for a user. Handles token
+ * generation, refresh token persistence, and JTI creation.
+ */
 @Service
 public class UserTokenCreationServiceImpl implements UserTokenCreationService {
 
@@ -22,6 +26,15 @@ public class UserTokenCreationServiceImpl implements UserTokenCreationService {
   private final long accessExpirationMs;
   private final long refreshExpirationMs;
 
+  /**
+   * Constructs a new UserTokenCreationServiceImpl.
+   *
+   * @param userRepository the user repository for persistence operations
+   * @param jwtTokenComponent the component for JWT token operations
+   * @param accessExpirationMs access token expiration in milliseconds
+   * @param refreshExpirationMs refresh token expiration in milliseconds
+   * @param jtiSalt the salt used for generating the JWT ID (JTI)
+   */
   public UserTokenCreationServiceImpl(
       UserRepository userRepository,
       JwtTokenComponent jwtTokenComponent,
@@ -35,38 +48,52 @@ public class UserTokenCreationServiceImpl implements UserTokenCreationService {
     this.refreshExpirationMs = refreshExpirationMs;
   }
 
+  /**
+   * Creates new access and refresh tokens for the given user account. Persists the new refresh
+   * token and generates a JTI for it.
+   *
+   * @param userAccount the user account for which to create tokens
+   * @return a {@link UserToken} containing the generated access and refresh tokens
+   */
   @Override
   public UserToken create(@Nonnull UserAccount userAccount) {
 
     // Create Access token
     final var jwtAccessToken =
         jwtTokenComponent.generateToken(
-            new JwtUserDetails(userAccount.getUsername(), userAccount.getRoleNames()),
+            new JwtUserDetails(
+                userAccount.getId(), userAccount.getUsername(), userAccount.getRoleNames()),
             accessExpirationMs,
             JwtTokenComponent.TokenType.ACCESS);
 
-    var now = ZonedDateTime.now();
+    // Current time
+    final var now = ZonedDateTime.now();
 
-    var refreshToken =
+    // Create Refresh token
+    final var refreshToken =
         RefreshToken.RefreshTokenBuilder.aRefreshToken()
             .withExpiresAt(ZonedDateTimeUtil.plusMillis(now, refreshExpirationMs))
             .withIssuedAt(now)
             .build();
 
+    // Add refresh token to user
     userAccount.addRefreshToken(refreshToken);
 
+    // Persist user with new refresh token
     userRepository.save(userAccount);
 
-    String jti = JtiUtil.createJti(refreshToken.getId(), jtiSalt);
+    // Create JTI for refresh token
+    final var jti = JtiUtil.createJti(refreshToken.getId(), jtiSalt);
 
-    // Create Access token
+    // Create Refresh token
     final var jwtRefreshToken =
         jwtTokenComponent.generateToken(
-            JwtUserDetails.withUsername(userAccount.getUsername()),
+            JwtUserDetails.withUserIdAndUsername(userAccount.getId(), userAccount.getUsername()),
             refreshExpirationMs,
             JwtTokenComponent.TokenType.REFRESH,
             jti);
 
+    // Return tokens
     return new UserToken(jwtAccessToken, jwtRefreshToken);
   }
 }

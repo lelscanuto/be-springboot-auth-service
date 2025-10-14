@@ -10,6 +10,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -53,12 +55,23 @@ public class JwtTokenComponent {
     }
 
     if (StringUtils.isNotBlank(jti)) {
-      builder.claim("jti", jti);
+      builder.setId(jti);
     }
 
     builder.claim("type", tokenType.name().toLowerCase());
 
     return builder.signWith(signingKey, SignatureAlgorithm.HS256).compact();
+  }
+
+  public boolean isTokenValid(String token, UserDetails userDetails) {
+    try {
+      Claims claims = getClaims(token);
+      String username = claims.getSubject();
+      Date expiration = claims.getExpiration();
+      return username.equals(userDetails.getUsername()) && isTokenExpired(token);
+    } catch (JwtException | IllegalArgumentException e) {
+      return false;
+    }
   }
 
   /** Validate token signature and expiration */
@@ -94,8 +107,24 @@ public class JwtTokenComponent {
     }
   }
 
+  public String getJtiFromToken(String token) {
+    return Jwts.parserBuilder()
+        .setSigningKey(signingKey)
+        .build()
+        .parseClaimsJws(token)
+        .getBody()
+        .getId();
+  }
+
   private Claims getClaims(String token) {
     return Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token).getBody();
+  }
+
+  private boolean isTokenExpired(String token) {
+    Date expiration = getClaims(token).getExpiration();
+    ZonedDateTime expirationTime =
+        ZonedDateTime.ofInstant(expiration.toInstant(), ZoneId.of("UTC"));
+    return expirationTime.isBefore(ZonedDateTimeUtil.now());
   }
 
   private Set<String> extractRoles(UserAccount userAccount) {
