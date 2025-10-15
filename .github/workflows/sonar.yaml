@@ -30,14 +30,21 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      # 4️⃣ Build and run tests
+      # 4️⃣ Build and run tests (this generates coverage data)
       - name: Build with Maven
-        run: mvn clean verify
+        run: mvn -B clean verify
 
       # 5️⃣ Run SonarQube analysis
       - name: SonarQube Scan
+        id: sonar
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           projectKey: lelscanuto_be-springboot-auth-service
           organization: lelscanuto
           token: ${{ secrets.SONAR_TOKEN }}
+
+      # 6️⃣ Wait for Quality Gate result (FAIL build if gate fails)
+      - name: SonarCloud Quality Gate Check
+        uses: SonarSource/sonarcloud-quality-gate-action@v1.1.0
+        with:
+          sonar_token: ${{ secrets.SONAR_TOKEN }}

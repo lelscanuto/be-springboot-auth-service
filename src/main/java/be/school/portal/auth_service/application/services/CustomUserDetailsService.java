@@ -86,5 +86,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     public boolean isEnabled() {
       return user.isActive();
     }
+
+    public UserAccount getUserAccount() {
+      return user;
+    }
   }
 }

@@ -5,10 +5,9 @@ import be.school.portal.auth_service.application.dto.TokenRequest;
 import be.school.portal.auth_service.application.mappers.LoginResponseMapper;
 import be.school.portal.auth_service.application.services.UserTokenRenewalService;
 import be.school.portal.auth_service.application.use_cases.UserTokenRefreshUseCase;
-import be.school.portal.auth_service.common.component.JwtTokenComponent;
+import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
 import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
 import be.school.portal.auth_service.common.exceptions.UserInvalidStateException;
-import be.school.portal.auth_service.common.exceptions.UserNotFoundException;
 import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.Valid;
@@ -33,7 +32,7 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
   private final UserRepository userRepository;
   private final UserTokenRenewalService userTokenRenewalService;
   private final LoginResponseMapper loginResponseMapper;
-  private final JwtTokenComponent jwtTokenComponent;
+  private final RefreshTokenProcessor refreshTokenProcessor;
 
   /**
    * Constructs a new UserTokenRefreshUseCaseImpl.
@@ -41,17 +40,17 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
    * @param userRepository the repository for user data access
    * @param userTokenRenewalService the service for renewing user tokens
    * @param loginResponseMapper the mapper for creating login responses
-   * @param jwtTokenComponent the component for JWT token operations
+   * @param refreshTokenProcessor the component for JWT token operations
    */
   public UserTokenRefreshUseCaseImpl(
       UserRepository userRepository,
       UserTokenRenewalService userTokenRenewalService,
       LoginResponseMapper loginResponseMapper,
-      JwtTokenComponent jwtTokenComponent) {
+      RefreshTokenProcessor refreshTokenProcessor) {
     this.userRepository = userRepository;
     this.userTokenRenewalService = userTokenRenewalService;
     this.loginResponseMapper = loginResponseMapper;
-    this.jwtTokenComponent = jwtTokenComponent;
+    this.refreshTokenProcessor = refreshTokenProcessor;
   }
 
   /**
@@ -67,7 +66,7 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
    * @param tokenRequest the request containing the refresh token
    * @return a {@link CompletableFuture} with the new {@link LoginResponse}
    * @throws InvalidCredentialException if the token is invalid or not a refresh token
-   * @throws UserNotFoundException if the user does not exist
+   * @throws UserInvalidStateException if the user is not active
    */
   @Override
   @Async
@@ -76,26 +75,15 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
     // Extract the refresh token from the request
     final var refreshToken = tokenRequest.token();
 
-    // 1️⃣ Validate refresh token
-    if (!jwtTokenComponent.validateToken(refreshToken)) {
-      throw InvalidCredentialException.ofToken(refreshToken);
-    }
-
-    // Ensure it’s a refresh token (not access)
-    JwtTokenComponent.TokenType tokenType = jwtTokenComponent.getTokenType(refreshToken);
-    if (JwtTokenComponent.TokenType.REFRESH != tokenType) {
-      throw InvalidCredentialException.ofTokenType(tokenType.name());
-    }
-
-    // Extract username and find the user
-    final var username = jwtTokenComponent.getUsernameFromToken(refreshToken);
-    final var jti = jwtTokenComponent.getJtiFromToken(refreshToken);
+    // Process and validate the refresh token
+    final RefreshTokenProcessor.RefreshTokenData refreshTokenData =
+        refreshTokenProcessor.process(refreshToken);
 
     // Retrieve the existing user or throw an exception if not found
     final var existingUser =
         userRepository
-            .findByUsername(username)
-            .orElseThrow(() -> InvalidCredentialException.ofUsername(username));
+            .findByUsername(refreshTokenData.username())
+            .orElseThrow(() -> InvalidCredentialException.ofUsername(refreshTokenData.username()));
 
     // Check if user is active
     if (!existingUser.isActive()) {
@@ -103,7 +91,8 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
           existingUser.getUsername(), existingUser.getStatus());
     }
 
-    final var userToken = userTokenRenewalService.renewTokens(existingUser, jti);
+    // Renew tokens for the user
+    final var userToken = userTokenRenewalService.renewTokens(existingUser, refreshTokenData.jti());
 
     return CompletableFuture.completedFuture(
         loginResponseMapper.toLoginResponse(existingUser, userToken));

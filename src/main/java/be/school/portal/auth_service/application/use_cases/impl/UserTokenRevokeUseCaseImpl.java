@@ -3,9 +3,10 @@ package be.school.portal.auth_service.application.use_cases.impl;
 import be.school.portal.auth_service.application.dto.TokenRequest;
 import be.school.portal.auth_service.application.services.UserTokenRevokeService;
 import be.school.portal.auth_service.application.use_cases.UserTokenRevokeUseCase;
-import be.school.portal.auth_service.common.component.JwtTokenComponent;
+import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
 import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
-import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
+import be.school.portal.auth_service.common.exceptions.UnauthorizedException;
+import be.school.portal.auth_service.common.utils.SecurityContextUtil;
 import jakarta.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.scheduling.annotation.Async;
@@ -23,24 +24,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
 
-  private final UserRepository userRepository;
   private final UserTokenRevokeService userTokenRevokeService;
-  private final JwtTokenComponent jwtTokenComponent;
+  private final RefreshTokenProcessor refreshTokenProcessor;
 
   /**
    * Constructs a new UserTokenRevokeUseCaseImpl.
    *
-   * @param userRepository the user repository for user lookup
    * @param userTokenRevokeService the service handling token revocation logic
-   * @param jwtTokenComponent the component for JWT token operations
+   * @param refreshTokenProcessor the component for JWT token operations
    */
   public UserTokenRevokeUseCaseImpl(
-      UserRepository userRepository,
-      UserTokenRevokeService userTokenRevokeService,
-      JwtTokenComponent jwtTokenComponent) {
-    this.userRepository = userRepository;
+      UserTokenRevokeService userTokenRevokeService, RefreshTokenProcessor refreshTokenProcessor) {
     this.userTokenRevokeService = userTokenRevokeService;
-    this.jwtTokenComponent = jwtTokenComponent;
+    this.refreshTokenProcessor = refreshTokenProcessor;
   }
 
   /**
@@ -56,37 +52,26 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
    * @param tokenRequest the request containing the token to revoke
    * @return a completed {@link CompletableFuture} when revocation is done
    * @throws InvalidCredentialException if the token is invalid or not a refresh token
+   * @throws UnauthorizedException if the token's username does not match the authenticated user
    */
   @Override
   @Async
   public CompletableFuture<Void> revoke(@Nonnull TokenRequest tokenRequest) {
 
     // Extract token from request
-    final var token = tokenRequest.token();
+    final var refreshToken = tokenRequest.token();
 
-    // Validate token
-    if (!jwtTokenComponent.validateToken(token)) {
-      throw InvalidCredentialException.ofToken(token);
+    // Process and validate the refresh token
+    final RefreshTokenProcessor.RefreshTokenData refreshTokenData =
+        refreshTokenProcessor.process(refreshToken);
+
+    // Ensure token owner matches the authenticated user
+    if (!SecurityContextUtil.getUsername().equals(refreshTokenData.username())) {
+      throw UnauthorizedException.ofUserMismatch(refreshTokenData.username());
     }
-
-    // Ensure it’s a refresh token (not access)
-    JwtTokenComponent.TokenType tokenType = jwtTokenComponent.getTokenType(token);
-    if (JwtTokenComponent.TokenType.REFRESH != tokenType) {
-      throw InvalidCredentialException.ofTokenType(tokenType.name());
-    }
-
-    // Extract username and JTI
-    final var jti = jwtTokenComponent.getJtiFromToken(token);
-    final var username = jwtTokenComponent.getUsernameFromToken(token);
-
-    // Lookup user
-    final var existingUser =
-        userRepository
-            .findByUsername(username)
-            .orElseThrow(() -> InvalidCredentialException.ofUsername(username));
 
     // Revoke the token
-    userTokenRevokeService.revoke(existingUser, jti);
+    userTokenRevokeService.revoke(SecurityContextUtil.getUserAccount(), refreshTokenData.jti());
 
     return CompletableFuture.completedFuture(null);
   }

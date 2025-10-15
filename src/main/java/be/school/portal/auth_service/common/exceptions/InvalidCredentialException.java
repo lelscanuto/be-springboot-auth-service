@@ -24,6 +24,10 @@ public class InvalidCredentialException extends LoginException implements CodedE
     return new InvalidCredentialException(String.format(TOKEN_MESSAGE, token));
   }
 
+  public static InvalidCredentialException notAuthenticated() {
+    return new InvalidCredentialException("User not authenticated.");
+  }
+
   public static InvalidCredentialException ofTokenType(String tokenName) {
     return new InvalidCredentialException(String.format(TOKEN_TYPE_MESSAGE, tokenName));
   }
