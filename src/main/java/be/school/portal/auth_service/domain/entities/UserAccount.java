@@ -2,6 +2,7 @@ package be.school.portal.auth_service.domain.entities;
 
 import be.school.portal.auth_service.domain.enums.UserStatus;
 import jakarta.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.*;
@@ -39,10 +40,28 @@ public class UserAccount {
       inverseJoinColumns = @JoinColumn(name = "role_id"))
   private Set<Role> roles;
 
+  @OneToMany(
+      mappedBy = "user",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.LAZY)
+  @Setter(AccessLevel.NONE)
+  private Set<RefreshToken> refreshTokens = new HashSet<>();
+
   public Set<Permission> getAllPermissions() {
     return roles.stream()
         .flatMap(role -> role.getPermissions().stream())
         .collect(Collectors.toSet());
+  }
+
+  public void addRefreshToken(RefreshToken refreshToken) {
+    this.refreshTokens.add(refreshToken);
+    refreshToken.setUser(this);
+  }
+
+  public void removeRefreshToken(RefreshToken refreshToken) {
+    this.refreshTokens.remove(refreshToken);
+    refreshToken.setUser(null);
   }
 
   public Set<String> getRoleNames() {
@@ -51,5 +70,18 @@ public class UserAccount {
 
   public boolean isActive() {
     return this.status == UserStatus.ACTIVE;
+  }
+
+  public RefreshToken getRefreshTokensWithId(long refreshTokenId) {
+    return this.refreshTokens.stream()
+        .filter(rt -> rt.getId() == refreshTokenId && rt.isActive())
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+  }
+
+  public void revokeTokenWith(long refreshTokenId) {
+    final var refreshToken = getRefreshTokensWithId(refreshTokenId);
+
+    refreshToken.revoke();
   }
 }

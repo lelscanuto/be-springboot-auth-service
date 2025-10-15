@@ -1,12 +1,12 @@
-package be.school.portal.auth_service.application.use_case.impl;
+package be.school.portal.auth_service.application.use_cases.impl;
 
-import be.school.portal.auth_service.application.component.JwtTokenComponent;
+import be.school.portal.auth_service.application.annotations.TrackLogin;
 import be.school.portal.auth_service.application.dto.LoginRequest;
 import be.school.portal.auth_service.application.dto.LoginResponse;
 import be.school.portal.auth_service.application.mappers.LoginResponseMapper;
-import be.school.portal.auth_service.application.tracer.TrackLogin;
-import be.school.portal.auth_service.application.use_case.UserLoginUseCase;
-import be.school.portal.auth_service.common.exceptions.InvalidPasswordException;
+import be.school.portal.auth_service.application.services.UserTokenCreationService;
+import be.school.portal.auth_service.application.use_cases.UserLoginUseCase;
+import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
 import be.school.portal.auth_service.common.exceptions.UserInvalidStateException;
 import be.school.portal.auth_service.common.exceptions.UserNotFoundException;
 import be.school.portal.auth_service.common.utils.PasswordUtil;
@@ -30,26 +30,19 @@ import org.springframework.transaction.annotation.Transactional;
  * context.
  */
 @Service
-@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+@Transactional(propagation = Propagation.REQUIRES_NEW)
 public class UserLoginUseCaseImpl implements UserLoginUseCase {
 
   private final UserRepository userRepository;
-  private final JwtTokenComponent jwtTokenComponent;
+  private final UserTokenCreationService userTokenCreationService;
   private final LoginResponseMapper loginResponseMapper;
 
-  /**
-   * Constructs a new {@link UserLoginUseCaseImpl} with required dependencies.
-   *
-   * @param userRepository the repository used for accessing user data
-   * @param jwtTokenComponent the component responsible for generating JWT tokens
-   * @param loginResponseMapper the mapper for converting user entities to login response DTOs
-   */
   public UserLoginUseCaseImpl(
       UserRepository userRepository,
-      JwtTokenComponent jwtTokenComponent,
+      UserTokenCreationService userTokenCreationService,
       LoginResponseMapper loginResponseMapper) {
     this.userRepository = userRepository;
-    this.jwtTokenComponent = jwtTokenComponent;
+    this.userTokenCreationService = userTokenCreationService;
     this.loginResponseMapper = loginResponseMapper;
   }
 
@@ -73,7 +66,7 @@ public class UserLoginUseCaseImpl implements UserLoginUseCase {
    *     information
    * @throws UserNotFoundException if no user exists for the given username
    * @throws UserInvalidStateException if the user account is inactive or locked
-   * @throws InvalidPasswordException if the password verification fails
+   * @throws InvalidCredentialException if the password verification fails
    */
   @Override
   @Async
@@ -84,7 +77,7 @@ public class UserLoginUseCaseImpl implements UserLoginUseCase {
     final var existingUser =
         userRepository
             .findByUsername(loginRequest.username())
-            .orElseThrow(() -> UserNotFoundException.ofUsername(loginRequest.username()));
+            .orElseThrow(() -> InvalidCredentialException.ofUsername(loginRequest.username()));
 
     // Check if user is active
     if (!existingUser.isActive()) {
@@ -92,13 +85,16 @@ public class UserLoginUseCaseImpl implements UserLoginUseCase {
           existingUser.getUsername(), existingUser.getStatus());
     }
 
+    boolean passwordMatched =
+        PasswordUtil.verify(loginRequest.password(), existingUser.getPassword());
+
     // Verify password
-    if (!PasswordUtil.verify(loginRequest.password(), existingUser.getPassword())) {
-      throw InvalidPasswordException.ofUsername(loginRequest.username());
+    if (!passwordMatched) {
+      throw InvalidCredentialException.ofUsername(loginRequest.username());
     }
 
     // Generate JWT token
-    final String token = jwtTokenComponent.generateToken(existingUser);
+    final UserTokenCreationService.UserToken token = userTokenCreationService.create(existingUser);
 
     // Return response wrapped in CompletableFuture
     return CompletableFuture.completedFuture(

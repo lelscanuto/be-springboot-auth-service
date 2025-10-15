@@ -4,7 +4,7 @@ import be.school.portal.auth_service.domain.enums.UserStatus;
 import jakarta.annotation.Nonnull;
 import java.io.Serial;
 
-public class UserInvalidStateException extends RuntimeException implements CodedException {
+public class UserInvalidStateException extends LoginException implements CodedException {
 
   @Serial private static final long serialVersionUID = -377932266630370938L;
 

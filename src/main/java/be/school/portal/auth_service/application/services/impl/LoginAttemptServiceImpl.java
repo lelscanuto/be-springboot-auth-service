@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service implementation for tracking and handling user login attempts. Locks the user account
+ * after a configurable number of consecutive failed attempts within a specified time window.
+ */
 @Service
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class LoginAttemptServiceImpl implements LoginAttemptService {
@@ -23,6 +27,12 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
   private final UserLoginAuditRepository userLoginAuditRepository;
   private final ApplicationEventPublisher applicationEventPublisher;
 
+  /**
+   * Constructs a new LoginAttemptServiceImpl.
+   *
+   * @param userLoginAuditRepository the repository for user login audit records
+   * @param applicationEventPublisher the event publisher for user lock events
+   */
   public LoginAttemptServiceImpl(
       UserLoginAuditRepository userLoginAuditRepository,
       ApplicationEventPublisher applicationEventPublisher) {
@@ -30,6 +40,14 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     this.applicationEventPublisher = applicationEventPublisher;
   }
 
+  /**
+   * Records a failed login attempt for the specified user and action. If the number of consecutive
+   * failures exceeds the maximum allowed, publishes a user lock event.
+   *
+   * @see UserLockEventListener
+   * @param username the username of the user
+   * @param loginAction the login action performed
+   */
   @Override
   public void recordFailure(String username, LoginAction loginAction) {
     userLoginAuditRepository.saveAndFlush(
@@ -66,6 +84,12 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     }
   }
 
+  /**
+   * Records a successful login attempt for the specified user and action.
+   *
+   * @param username the username of the user
+   * @param loginAction the login action performed
+   */
   @Override
   public void recordSuccess(String username, LoginAction loginAction) {
     userLoginAuditRepository.save(
