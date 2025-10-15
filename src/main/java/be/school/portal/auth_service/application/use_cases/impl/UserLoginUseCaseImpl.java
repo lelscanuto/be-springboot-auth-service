@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
  * context.
  */
 @Service
-@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+@Transactional(propagation = Propagation.REQUIRES_NEW)
 public class UserLoginUseCaseImpl implements UserLoginUseCase {
 
   private final UserRepository userRepository;

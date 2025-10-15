@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+/** Listener for user lock events. Handles locking a user account when a lock event is published. */
 @Component
 public class UserLockEventListener {
 
@@ -14,10 +15,21 @@ public class UserLockEventListener {
 
   private final UserLockUseCase userLockUseCase;
 
+  /**
+   * Constructs a new UserLockEventListener.
+   *
+   * @param userLockUseCase the use case for locking user accounts
+   */
   public UserLockEventListener(UserLockUseCase userLockUseCase) {
     this.userLockUseCase = userLockUseCase;
   }
 
+  /**
+   * Handles the user lock event before the transaction is committed. Attempts to lock the user and
+   * logs any failure.
+   *
+   * @param userLockEventDTO the event containing the username to lock
+   */
   @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
   public void handleEvent(UserLockEventDTO userLockEventDTO) {
     userLockUseCase
@@ -29,5 +41,10 @@ public class UserLockEventListener {
             });
   }
 
+  /**
+   * Event DTO representing a user lock event.
+   *
+   * @param username the username to be locked
+   */
   public record UserLockEventDTO(String username) {}
 }

@@ -67,7 +67,6 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
    * @param tokenRequest the request containing the refresh token
    * @return a {@link CompletableFuture} with the new {@link LoginResponse}
    * @throws InvalidCredentialException if the token is invalid or not a refresh token
-   * @throws UserInvalidStateException if the user is not active
    * @throws UserNotFoundException if the user does not exist
    */
   @Override
@@ -96,7 +95,7 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
     final var existingUser =
         userRepository
             .findByUsername(username)
-            .orElseThrow(() -> UserNotFoundException.ofUsername(username));
+            .orElseThrow(() -> InvalidCredentialException.ofUsername(username));
 
     // Check if user is active
     if (!existingUser.isActive()) {
