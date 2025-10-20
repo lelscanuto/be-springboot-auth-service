@@ -5,16 +5,20 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
-  USER_UNAUTHORIZED("auth-user-err-00", HttpStatus.UNAUTHORIZED),
-  USER_NOT_FOUND("auth-user-err-01", HttpStatus.NOT_FOUND),
-  USER_INVALID_CREDENTIAL("auth-user-err-02", HttpStatus.UNAUTHORIZED),
-  USER_INVALID_STATE("auth-user-err-03", HttpStatus.UNPROCESSABLE_ENTITY);
+  INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
+  USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
+  USER_FORBIDDEN(HttpStatus.FORBIDDEN),
+  USER_NOT_FOUND(HttpStatus.NOT_FOUND),
+  USER_INVALID_CREDENTIAL(HttpStatus.UNAUTHORIZED),
+  USER_INVALID_STATE(HttpStatus.UNPROCESSABLE_ENTITY);
 
-  private final String code;
   private final HttpStatus httpStatus;
 
-  ErrorCode(String code, HttpStatus httpStatus) {
-    this.code = code;
+  ErrorCode(HttpStatus httpStatus) {
     this.httpStatus = httpStatus;
+  }
+
+  public String getCode() {
+    return this.name();
   }
 }

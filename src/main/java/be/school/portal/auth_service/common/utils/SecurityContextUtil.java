@@ -11,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * from the Spring Security {@link SecurityContextHolder}.
  *
  * <p>This class exposes helper methods to retrieve the authenticated user's username or the full
- * {@link UserAccount} domain object from a {@link CustomUserDetailsService.CustomUserDetails}
+ * {@link UserAccount} domain object from a {@link CustomUserDetailsService.UserPrincipal}
  * principal.
  *
  * <p>If there is no authenticated user in the current context, methods in this class will throw an
@@ -45,29 +45,10 @@ public final class SecurityContextUtil {
     if (authentication == null
         || !authentication.isAuthenticated()
         || !(authentication.getPrincipal()
-            instanceof CustomUserDetailsService.CustomUserDetails userDetails)) {
+            instanceof CustomUserDetailsService.UserPrincipal userDetails)) {
       throw UnauthorizedException.ofMissingAuth();
     }
 
     return userDetails.getUsername();
-  }
-
-  /**
-   * Retrieves the {@link UserAccount} of the currently authenticated user.
-   *
-   * @return the authenticated user's {@link UserAccount}
-   * @throws UnauthorizedException if the user is not authenticated or the principal is invalid
-   */
-  public static UserAccount getUserAccount() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    if (authentication == null
-        || !authentication.isAuthenticated()
-        || !(authentication.getPrincipal()
-            instanceof CustomUserDetailsService.CustomUserDetails userDetails)) {
-      throw UnauthorizedException.ofMissingAuth();
-    }
-
-    return userDetails.getUserAccount();
   }
 }

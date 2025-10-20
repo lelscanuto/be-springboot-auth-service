@@ -23,12 +23,17 @@ public class LoginTrackerAspect {
     this.loginAttemptService = loginAttemptService;
   }
 
-  @AfterReturning(value = "@annotation(trackLogin) && args(loginRequest,..)")
+  @AfterReturning(
+      value =
+          "@annotation( be.school.portal.auth_service.application.annotations.TrackLogin) && args(loginRequest,..)")
   public void afterSuccess(LoginRequest loginRequest) {
     loginAttemptService.recordSuccess(loginRequest.username(), LoginAction.LOGIN_SUCCESS);
   }
 
-  @AfterThrowing(value = "@annotation(trackLogin) && args(loginRequest,..)", throwing = "ex")
+  @AfterThrowing(
+      value =
+          "@annotation(be.school.portal.auth_service.application.annotations.TrackLogin) && args(loginRequest,..)",
+      throwing = "ex")
   public void afterFailure(LoginRequest loginRequest, LoginException ex) {
     loginAttemptService.recordFailure(loginRequest.username(), getLoginActionFromException(ex));
   }

@@ -11,7 +11,10 @@ import org.springframework.util.CollectionUtils;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface RoleProjectionMapper {
 
-  @Mapping(source = "permissions", target = "permissions", qualifiedByName = "toPermissionNames")
+  @Mapping(
+      source = "role.permissions",
+      target = "permissions",
+      qualifiedByName = "toPermissionNames")
   UserProjection.RoleProjection toRoleProjection(Role role);
 
   @Named("toPermissionNames")

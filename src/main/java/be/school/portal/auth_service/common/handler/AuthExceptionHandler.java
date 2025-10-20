@@ -1,9 +1,10 @@
 package be.school.portal.auth_service.common.handler;
 
 import be.school.portal.auth_service.common.exceptions.CodedException;
+import be.school.portal.auth_service.common.exceptions.ErrorCode;
+import be.school.portal.auth_service.common.utils.ZonedDateTimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,10 +20,19 @@ public class AuthExceptionHandler {
 
     final var errorCode = exception.getErrorCode();
 
-    var res = ProblemDetail.forStatus(errorCode.getHttpStatus());
-    res.setTitle(errorCode.getCode());
+    final var problem = ProblemDetail.forStatus(errorCode.getHttpStatus());
+    problem.setTitle(errorCode.getHttpStatus().getReasonPhrase());
+    problem.setDetail("Something went wrong.");
 
-    return ResponseEntity.status(errorCode.getHttpStatus()).body(res);
+    // ✅ Add custom fields
+    problem.setProperty("code", errorCode.getCode());
+    problem.setProperty("timestamp", ZonedDateTimeUtil.now());
+
+    RuntimeException runtimeException = (RuntimeException) exception;
+
+    LOGGER.error(runtimeException.getMessage(), runtimeException);
+
+    return ResponseEntity.status(errorCode.getHttpStatus()).body(problem);
   }
 
   @ExceptionHandler(Exception.class)
@@ -30,7 +40,16 @@ public class AuthExceptionHandler {
 
     LOGGER.error(exception.getMessage(), exception);
 
-    return ResponseEntity.internalServerError()
-        .body(ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR));
+    ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+
+    final var problem = ProblemDetail.forStatus(errorCode.getHttpStatus());
+    problem.setTitle(errorCode.getHttpStatus().getReasonPhrase());
+    problem.setDetail("Something went wrong.");
+
+    // ✅ Add custom fields
+    problem.setProperty("code", errorCode.getCode());
+    problem.setProperty("timestamp", ZonedDateTimeUtil.now());
+
+    return ResponseEntity.internalServerError().body(problem);
   }
 }
