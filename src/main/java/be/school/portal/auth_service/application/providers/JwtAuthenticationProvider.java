@@ -1,8 +1,8 @@
 package be.school.portal.auth_service.application.providers;
 
 import be.school.portal.auth_service.application.services.CustomUserDetailsService;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.domain.entities.UserAccount;
-import be.school.portal.auth_service.domain.enums.UserStatus;
 import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
 import lombok.Getter;
 import org.springframework.security.authentication.*;
@@ -27,26 +27,22 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     String username = authentication.getName();
     String password = (String) authentication.getCredentials();
 
-    // 1️⃣ Fetch user from DB
-    UserAccount user =
+    // Fetch user from DB
+    UserAccount existingUser =
         userRepository
             .findByUsername(username)
             .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
 
-    // 3️⃣ Verify password
-    if (!passwordEncoder.matches(password, user.getPassword())) {
-      throw new BadCredentialsException("Invalid username or password");
+    // Verify password
+    if (!passwordEncoder.matches(password, existingUser.getPassword())) {
+      throw SecurityExceptionFactory.BadCredentialsExceptionFactory.forUsername(
+          existingUser.getUsername());
     }
 
-    if (UserStatus.LOCKED == user.getStatus()) {
-      throw new LockedException("User is locked");
-    }
+    // Assert user state
+    existingUser.ensureActive();
 
-    if (UserStatus.INACTIVE == user.getStatus()) {
-      throw new DisabledException("User is inactive");
-    }
-
-    final var userPrincipalContext = UserPrincipalContext.ofContext(user);
+    final var userPrincipalContext = UserPrincipalContext.ofContext(existingUser);
 
     // 4️⃣ Return authenticated token with authorities
     return new UsernamePasswordAuthenticationToken(

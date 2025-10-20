@@ -24,7 +24,7 @@ public class AuthExceptionHandler {
 
     LOGGER.error(badCredentialsException.getMessage(), badCredentialsException);
 
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ProblemDetailFactory.forbidden());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ProblemDetailFactory.forbidden());
   }
 
   @ExceptionHandler(AuthenticationException.class)

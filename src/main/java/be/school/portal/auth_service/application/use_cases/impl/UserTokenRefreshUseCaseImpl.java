@@ -7,7 +7,6 @@ import be.school.portal.auth_service.application.services.UserTokenRenewalServic
 import be.school.portal.auth_service.application.use_cases.UserTokenRefreshUseCase;
 import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
-import be.school.portal.auth_service.domain.enums.UserStatus;
 import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.Valid;
@@ -92,15 +91,8 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
                     SecurityExceptionFactory.UsernameNotFoundExceptionFactory.ofUsername(
                         refreshTokenData.username()));
 
-    // Check if user is active
-    if (UserStatus.INACTIVE == existingUser.getStatus()) {
-      throw SecurityExceptionFactory.UserStateExceptionFactory.disabled(existingUser.getUsername());
-    }
-
-    // Check if user is active
-    if (UserStatus.LOCKED == existingUser.getStatus()) {
-      throw SecurityExceptionFactory.UserStateExceptionFactory.locked(existingUser.getUsername());
-    }
+    // Assert user state
+    existingUser.ensureActive();
 
     // Renew tokens for the user
     final var userToken = userTokenRenewalService.renewTokens(existingUser, refreshTokenData.jti());

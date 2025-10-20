@@ -73,19 +73,19 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
     final RefreshTokenProcessor.RefreshTokenData refreshTokenData =
         refreshTokenProcessor.process(refreshToken);
 
+    // Get Authenticated User
+    final var authenticatedUser = SecurityContextUtil.getUsername();
+
     // Ensure token owner matches the authenticated user
-    if (!SecurityContextUtil.getUsername().equals(refreshTokenData.username())) {
+    if (!authenticatedUser.equals(refreshTokenData.username())) {
       throw SecurityExceptionFactory.AccessDeniedExceptionFactory.forUserMismatch(
           refreshTokenData.username());
     }
 
-    // Get Authenticated User
-    final var authenticatedUser = SecurityContextUtil.getUsername();
-
     // Query User if it exists
     final var existingUser =
         userRepository
-            .findByUsername(SecurityContextUtil.getUsername())
+            .findByUsername(authenticatedUser)
             .orElseThrow(
                 () ->
                     SecurityExceptionFactory.UsernameNotFoundExceptionFactory.ofUsername(

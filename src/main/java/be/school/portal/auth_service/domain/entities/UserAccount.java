@@ -1,5 +1,6 @@
 package be.school.portal.auth_service.domain.entities;
 
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.domain.enums.UserStatus;
 import jakarta.persistence.*;
 import java.util.HashSet;
@@ -84,5 +85,17 @@ public class UserAccount {
     final var refreshToken = getRefreshTokensWithId(refreshTokenId);
 
     refreshToken.revoke();
+  }
+
+  public void ensureActive() {
+    // Check if user is inactive
+    if (UserStatus.INACTIVE == this.status) {
+      throw SecurityExceptionFactory.UserStateExceptionFactory.disabled(this.getUsername());
+    }
+
+    // Check if user is lock
+    if (UserStatus.LOCKED == this.status) {
+      throw SecurityExceptionFactory.UserStateExceptionFactory.locked(this.getUsername());
+    }
   }
 }
