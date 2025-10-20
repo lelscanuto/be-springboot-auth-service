@@ -4,16 +4,15 @@ import be.school.portal.auth_service.application.annotations.TrackLogin;
 import be.school.portal.auth_service.application.dto.LoginRequest;
 import be.school.portal.auth_service.application.dto.LoginResponse;
 import be.school.portal.auth_service.application.mappers.LoginResponseMapper;
+import be.school.portal.auth_service.application.providers.JwtAuthenticationProvider;
 import be.school.portal.auth_service.application.services.UserTokenCreationService;
 import be.school.portal.auth_service.application.use_cases.UserLoginUseCase;
-import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
-import be.school.portal.auth_service.common.exceptions.UserInvalidStateException;
-import be.school.portal.auth_service.common.exceptions.UserNotFoundException;
-import be.school.portal.auth_service.common.utils.PasswordUtil;
-import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
 import jakarta.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,15 +32,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class UserLoginUseCaseImpl implements UserLoginUseCase {
 
-  private final UserRepository userRepository;
+  private final AuthenticationManager authenticationManager;
   private final UserTokenCreationService userTokenCreationService;
   private final LoginResponseMapper loginResponseMapper;
 
   public UserLoginUseCaseImpl(
-      UserRepository userRepository,
+      AuthenticationManager authenticationManager,
       UserTokenCreationService userTokenCreationService,
       LoginResponseMapper loginResponseMapper) {
-    this.userRepository = userRepository;
+    this.authenticationManager = authenticationManager;
+
     this.userTokenCreationService = userTokenCreationService;
     this.loginResponseMapper = loginResponseMapper;
   }
@@ -64,40 +64,29 @@ public class UserLoginUseCaseImpl implements UserLoginUseCase {
    * @param loginRequest the incoming request containing username and password
    * @return a {@link CompletableFuture} containing the {@link LoginResponse} with user and token
    *     information
-   * @throws UserNotFoundException if no user exists for the given username
-   * @throws UserInvalidStateException if the user account is inactive or locked
-   * @throws InvalidCredentialException if the password verification fails
+   * @throws org.springframework.security.authentication.BadCredentialsException if no user exists
+   *     for the given username
    */
   @Override
   @Async
   @TrackLogin
   public CompletableFuture<LoginResponse> login(@Nonnull LoginRequest loginRequest) {
 
-    // Fetch the user
-    final var existingUser =
-        userRepository
-            .findByUsername(loginRequest.username())
-            .orElseThrow(() -> InvalidCredentialException.ofUsername(loginRequest.username()));
+    Authentication authentication =
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                loginRequest.username(), loginRequest.password() // raw password
+                ));
 
-    // Check if user is active
-    if (!existingUser.isActive()) {
-      throw UserInvalidStateException.ofUsernameAndStatus(
-          existingUser.getUsername(), existingUser.getStatus());
-    }
-
-    boolean passwordMatched =
-        PasswordUtil.verify(loginRequest.password(), existingUser.getPassword());
-
-    // Verify password
-    if (!passwordMatched) {
-      throw InvalidCredentialException.ofUsername(loginRequest.username());
-    }
+    JwtAuthenticationProvider.UserPrincipalContext userPrincipalContext =
+        (JwtAuthenticationProvider.UserPrincipalContext) authentication.getPrincipal();
 
     // Generate JWT token
-    final UserTokenCreationService.UserToken token = userTokenCreationService.create(existingUser);
+    final UserTokenCreationService.UserToken token =
+        userTokenCreationService.create(userPrincipalContext.getContext());
 
     // Return response wrapped in CompletableFuture
     return CompletableFuture.completedFuture(
-        loginResponseMapper.toLoginResponse(existingUser, token));
+        loginResponseMapper.toLoginResponse(userPrincipalContext.getContext(), token));
   }
 }

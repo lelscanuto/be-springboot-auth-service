@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.*;
+import org.springframework.security.access.AccessDeniedException;
 
 @Entity
 @Table(
@@ -76,7 +77,7 @@ public class UserAccount {
     return this.refreshTokens.stream()
         .filter(rt -> rt.getId() == refreshTokenId && rt.isActive())
         .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+        .orElseThrow(() -> new AccessDeniedException("Invalid refresh token"));
   }
 
   public void revokeTokenWith(long refreshTokenId) {

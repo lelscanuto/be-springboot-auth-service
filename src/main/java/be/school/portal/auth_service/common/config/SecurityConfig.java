@@ -1,14 +1,14 @@
 package be.school.portal.auth_service.common.config;
 
-import be.school.portal.auth_service.common.exceptions.ErrorCode;
+import be.school.portal.auth_service.application.providers.JwtAuthenticationProvider;
+import be.school.portal.auth_service.common.builders.ProblemDetailFactory;
 import be.school.portal.auth_service.common.handler.JwtAuthenticationFilter;
-import be.school.portal.auth_service.common.utils.ZonedDateTimeUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
-import java.net.URI;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.ProblemDetail;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,11 +19,15 @@ public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final ObjectMapper objectMapper;
+  private final JwtAuthenticationProvider jwtAuthenticationProvider;
 
   public SecurityConfig(
-      JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      ObjectMapper objectMapper,
+      JwtAuthenticationProvider jwtAuthenticationProvider) {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     this.objectMapper = objectMapper;
+    this.jwtAuthenticationProvider = jwtAuthenticationProvider;
   }
 
   @Bean
@@ -43,41 +47,34 @@ public class SecurityConfig {
                     .permitAll()
                     .anyRequest()
                     .authenticated())
+        .authenticationProvider(jwtAuthenticationProvider)
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(
             ex ->
                 ex.authenticationEntryPoint(
                         (request, response, authException) -> {
-                          ErrorCode unauthorize = ErrorCode.USER_UNAUTHORIZED;
-                          var problem = ProblemDetail.forStatus(unauthorize.getHttpStatus());
-                          problem.setTitle("Unauthorized");
-                          problem.setDetail("Invalid or missing authentication token.");
-                          problem.setInstance(URI.create(request.getRequestURI()));
-
-                          // ✅ Add custom fields
-                          problem.setProperty("code", unauthorize.getCode());
-                          problem.setProperty("timestamp", ZonedDateTimeUtil.now());
-
                           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                           response.setContentType("application/problem+json");
-                          objectMapper.writeValue(response.getOutputStream(), problem);
+
+                          objectMapper.writeValue(
+                              response.getOutputStream(),
+                              ProblemDetailFactory.unauthorized(request.getRequestURI()));
                         })
                     .accessDeniedHandler(
                         (request, response, accessDeniedException) -> {
-                          ErrorCode forbidden = ErrorCode.USER_FORBIDDEN;
-                          var problem = ProblemDetail.forStatus(forbidden.getHttpStatus());
-                          problem.setTitle("Forbidden");
-                          problem.setDetail("You do not have permission to access this resource.");
-                          problem.setInstance(URI.create(request.getRequestURI()));
-
-                          // ✅ Add custom fields
-                          problem.setProperty("code", forbidden.getCode());
-                          problem.setProperty("timestamp", ZonedDateTimeUtil.now());
-
                           response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                           response.setContentType("application/problem+json");
-                          objectMapper.writeValue(response.getOutputStream(), problem);
+                          objectMapper.writeValue(
+                              response.getOutputStream(),
+                              ProblemDetailFactory.forbidden(request.getRequestURI()));
                         }))
         .build();
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+      throws Exception {
+    // Get the default AuthenticationManager from Spring Security
+    return authConfig.getAuthenticationManager();
   }
 }

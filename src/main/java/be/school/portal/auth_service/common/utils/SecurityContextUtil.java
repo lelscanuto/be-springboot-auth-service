@@ -1,8 +1,9 @@
 package be.school.portal.auth_service.common.utils;
 
 import be.school.portal.auth_service.application.services.CustomUserDetailsService;
-import be.school.portal.auth_service.common.exceptions.UnauthorizedException;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.domain.entities.UserAccount;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -37,7 +38,8 @@ public final class SecurityContextUtil {
    * Retrieves the username of the currently authenticated user.
    *
    * @return the authenticated user's username
-   * @throws UnauthorizedException if the user is not authenticated or the principal is invalid
+   * @throws AuthenticationCredentialsNotFoundException if the user is not authenticated or the
+   *     principal is invalid
    */
   public static String getUsername() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -46,7 +48,7 @@ public final class SecurityContextUtil {
         || !authentication.isAuthenticated()
         || !(authentication.getPrincipal()
             instanceof CustomUserDetailsService.UserPrincipal userDetails)) {
-      throw UnauthorizedException.ofMissingAuth();
+      throw SecurityExceptionFactory.missingAuth();
     }
 
     return userDetails.getUsername();

@@ -5,12 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
-  INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
-  USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
-  USER_FORBIDDEN(HttpStatus.FORBIDDEN),
-  USER_NOT_FOUND(HttpStatus.NOT_FOUND),
-  USER_INVALID_CREDENTIAL(HttpStatus.UNAUTHORIZED),
-  USER_INVALID_STATE(HttpStatus.UNPROCESSABLE_ENTITY);
+  TEST(HttpStatus.INTERNAL_SERVER_ERROR);
 
   private final HttpStatus httpStatus;
 

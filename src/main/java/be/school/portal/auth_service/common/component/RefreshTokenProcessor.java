@@ -1,6 +1,6 @@
 package be.school.portal.auth_service.common.component;
 
-import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import jakarta.annotation.Nonnull;
 import org.springframework.stereotype.Component;
 
@@ -28,17 +28,19 @@ public class RefreshTokenProcessor {
    *
    * @param token the JWT token to validate
    * @return a {@link RefreshTokenData} containing username and JTI
-   * @throws InvalidCredentialException if the token is invalid or not a refresh token
+   * @throws org.springframework.security.authentication.BadCredentialsException if the token is
+   *     invalid or not a refresh token
    */
   @Nonnull
   public RefreshTokenData process(@Nonnull String token) {
+
     if (!jwtTokenComponent.validateToken(token)) {
-      throw InvalidCredentialException.ofToken(token);
+      throw SecurityExceptionFactory.BadCredentialsExceptionFactory.forToken(token);
     }
 
     JwtTokenComponent.TokenType tokenType = jwtTokenComponent.getTokenType(token);
     if (JwtTokenComponent.TokenType.REFRESH != tokenType) {
-      throw InvalidCredentialException.ofTokenType(tokenType.name());
+      throw SecurityExceptionFactory.BadCredentialsExceptionFactory.ofTokenType(tokenType.name());
     }
 
     final var username = jwtTokenComponent.getUsernameFromToken(token);

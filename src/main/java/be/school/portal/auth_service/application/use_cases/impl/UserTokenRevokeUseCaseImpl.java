@@ -3,15 +3,14 @@ package be.school.portal.auth_service.application.use_cases.impl;
 import be.school.portal.auth_service.application.dto.TokenRequest;
 import be.school.portal.auth_service.application.services.UserTokenRevokeService;
 import be.school.portal.auth_service.application.use_cases.UserTokenRevokeUseCase;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
-import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
-import be.school.portal.auth_service.common.exceptions.UnauthorizedException;
-import be.school.portal.auth_service.common.exceptions.UserNotFoundException;
 import be.school.portal.auth_service.common.utils.SecurityContextUtil;
 import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
 import jakarta.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,8 +56,11 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
    *
    * @param tokenRequest the request containing the token to revoke
    * @return a completed {@link CompletableFuture} when revocation is done
-   * @throws InvalidCredentialException if the token is invalid or not a refresh token
-   * @throws UnauthorizedException if the token's username does not match the authenticated user
+   * @throws org.springframework.security.authentication.BadCredentialsException if the token is
+   *     invalid or not a refresh token
+   * @throws org.springframework.security.access.AccessDeniedException if the token's username does
+   *     not match the authenticated user
+   * @throws UsernameNotFoundException if authenticated user is not found
    */
   @Override
   @Async
@@ -73,15 +75,21 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
 
     // Ensure token owner matches the authenticated user
     if (!SecurityContextUtil.getUsername().equals(refreshTokenData.username())) {
-      throw UnauthorizedException.ofUserMismatch(refreshTokenData.username());
+      throw SecurityExceptionFactory.AccessDeniedExceptionFactory.forUserMismatch(
+          refreshTokenData.username());
     }
 
+    // Get Authenticated User
     final var authenticatedUser = SecurityContextUtil.getUsername();
 
+    // Query User if it exists
     final var existingUser =
         userRepository
             .findByUsername(SecurityContextUtil.getUsername())
-            .orElseThrow(() -> UserNotFoundException.ofUsername(authenticatedUser));
+            .orElseThrow(
+                () ->
+                    SecurityExceptionFactory.UsernameNotFoundExceptionFactory.ofUsername(
+                        authenticatedUser));
 
     // Revoke the token
     userTokenRevokeService.revoke(existingUser, refreshTokenData.jti());
