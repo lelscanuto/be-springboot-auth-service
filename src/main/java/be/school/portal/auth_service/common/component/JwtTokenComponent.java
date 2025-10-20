@@ -67,8 +67,7 @@ public class JwtTokenComponent {
     try {
       Claims claims = getClaims(token);
       String username = claims.getSubject();
-      Date expiration = claims.getExpiration();
-      return username.equals(userDetails.getUsername()) && isTokenExpired(token);
+      return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     } catch (JwtException | IllegalArgumentException e) {
       return false;
     }
@@ -124,7 +123,7 @@ public class JwtTokenComponent {
     Date expiration = getClaims(token).getExpiration();
     ZonedDateTime expirationTime =
         ZonedDateTime.ofInstant(expiration.toInstant(), ZoneId.of("UTC"));
-    return expirationTime.isBefore(ZonedDateTimeUtil.now());
+    return ZonedDateTimeUtil.now().isAfter(expirationTime);
   }
 
   private Set<String> extractRoles(UserAccount userAccount) {

@@ -3,13 +3,14 @@ package be.school.portal.auth_service.application.use_cases.impl;
 import be.school.portal.auth_service.application.dto.TokenRequest;
 import be.school.portal.auth_service.application.services.UserTokenRevokeService;
 import be.school.portal.auth_service.application.use_cases.UserTokenRevokeUseCase;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
-import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
-import be.school.portal.auth_service.common.exceptions.UnauthorizedException;
 import be.school.portal.auth_service.common.utils.SecurityContextUtil;
+import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
 import jakarta.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
 
+  private final UserRepository userRepository;
   private final UserTokenRevokeService userTokenRevokeService;
   private final RefreshTokenProcessor refreshTokenProcessor;
 
@@ -34,7 +36,10 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
    * @param refreshTokenProcessor the component for JWT token operations
    */
   public UserTokenRevokeUseCaseImpl(
-      UserTokenRevokeService userTokenRevokeService, RefreshTokenProcessor refreshTokenProcessor) {
+      UserRepository userRepository,
+      UserTokenRevokeService userTokenRevokeService,
+      RefreshTokenProcessor refreshTokenProcessor) {
+    this.userRepository = userRepository;
     this.userTokenRevokeService = userTokenRevokeService;
     this.refreshTokenProcessor = refreshTokenProcessor;
   }
@@ -51,8 +56,11 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
    *
    * @param tokenRequest the request containing the token to revoke
    * @return a completed {@link CompletableFuture} when revocation is done
-   * @throws InvalidCredentialException if the token is invalid or not a refresh token
-   * @throws UnauthorizedException if the token's username does not match the authenticated user
+   * @throws org.springframework.security.authentication.BadCredentialsException if the token is
+   *     invalid or not a refresh token
+   * @throws org.springframework.security.access.AccessDeniedException if the token's username does
+   *     not match the authenticated user
+   * @throws UsernameNotFoundException if authenticated user is not found
    */
   @Override
   @Async
@@ -65,13 +73,26 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
     final RefreshTokenProcessor.RefreshTokenData refreshTokenData =
         refreshTokenProcessor.process(refreshToken);
 
+    // Get Authenticated User
+    final var authenticatedUser = SecurityContextUtil.getUsername();
+
     // Ensure token owner matches the authenticated user
-    if (!SecurityContextUtil.getUsername().equals(refreshTokenData.username())) {
-      throw UnauthorizedException.ofUserMismatch(refreshTokenData.username());
+    if (!authenticatedUser.equals(refreshTokenData.username())) {
+      throw SecurityExceptionFactory.AccessDeniedExceptionFactory.forUserMismatch(
+          refreshTokenData.username());
     }
 
+    // Query User if it exists
+    final var existingUser =
+        userRepository
+            .findByUsername(authenticatedUser)
+            .orElseThrow(
+                () ->
+                    SecurityExceptionFactory.UsernameNotFoundExceptionFactory.ofUsername(
+                        authenticatedUser));
+
     // Revoke the token
-    userTokenRevokeService.revoke(SecurityContextUtil.getUserAccount(), refreshTokenData.jti());
+    userTokenRevokeService.revoke(existingUser, refreshTokenData.jti());
 
     return CompletableFuture.completedFuture(null);
   }

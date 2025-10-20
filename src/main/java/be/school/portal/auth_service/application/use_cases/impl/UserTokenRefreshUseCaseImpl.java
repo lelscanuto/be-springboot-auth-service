@@ -5,9 +5,8 @@ import be.school.portal.auth_service.application.dto.TokenRequest;
 import be.school.portal.auth_service.application.mappers.LoginResponseMapper;
 import be.school.portal.auth_service.application.services.UserTokenRenewalService;
 import be.school.portal.auth_service.application.use_cases.UserTokenRefreshUseCase;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
-import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
-import be.school.portal.auth_service.common.exceptions.UserInvalidStateException;
 import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.Valid;
@@ -65,8 +64,12 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
    *
    * @param tokenRequest the request containing the refresh token
    * @return a {@link CompletableFuture} with the new {@link LoginResponse}
-   * @throws InvalidCredentialException if the token is invalid or not a refresh token
-   * @throws UserInvalidStateException if the user is not active
+   * @throws org.springframework.security.authentication.BadCredentialsException if the token is
+   *     invalid or not a refresh token
+   * @throws org.springframework.security.core.userdetails.UsernameNotFoundException if the user
+   *     does not exists
+   * @throws org.springframework.security.authentication.LockedException if the user is locked
+   * @throws org.springframework.security.authentication.DisabledException if the user is inactive
    */
   @Override
   @Async
@@ -83,13 +86,13 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
     final var existingUser =
         userRepository
             .findByUsername(refreshTokenData.username())
-            .orElseThrow(() -> InvalidCredentialException.ofUsername(refreshTokenData.username()));
+            .orElseThrow(
+                () ->
+                    SecurityExceptionFactory.UsernameNotFoundExceptionFactory.ofUsername(
+                        refreshTokenData.username()));
 
-    // Check if user is active
-    if (!existingUser.isActive()) {
-      throw UserInvalidStateException.ofUsernameAndStatus(
-          existingUser.getUsername(), existingUser.getStatus());
-    }
+    // Assert user state
+    existingUser.ensureActive();
 
     // Renew tokens for the user
     final var userToken = userTokenRenewalService.renewTokens(existingUser, refreshTokenData.jti());

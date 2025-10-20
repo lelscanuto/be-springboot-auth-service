@@ -1,11 +1,13 @@
 package be.school.portal.auth_service.domain.entities;
 
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.domain.enums.UserStatus;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.*;
+import org.springframework.security.access.AccessDeniedException;
 
 @Entity
 @Table(
@@ -76,12 +78,24 @@ public class UserAccount {
     return this.refreshTokens.stream()
         .filter(rt -> rt.getId() == refreshTokenId && rt.isActive())
         .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+        .orElseThrow(() -> new AccessDeniedException("Invalid refresh token"));
   }
 
   public void revokeTokenWith(long refreshTokenId) {
     final var refreshToken = getRefreshTokensWithId(refreshTokenId);
 
     refreshToken.revoke();
+  }
+
+  public void ensureActive() {
+    // Check if user is inactive
+    if (UserStatus.INACTIVE == this.status) {
+      throw SecurityExceptionFactory.UserStateExceptionFactory.disabled(this.getUsername());
+    }
+
+    // Check if user is lock
+    if (UserStatus.LOCKED == this.status) {
+      throw SecurityExceptionFactory.UserStateExceptionFactory.locked(this.getUsername());
+    }
   }
 }

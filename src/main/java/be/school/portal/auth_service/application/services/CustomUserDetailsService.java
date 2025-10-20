@@ -5,6 +5,7 @@ import be.school.portal.auth_service.domain.entities.UserAccount;
 import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,8 +13,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
 public class CustomUserDetailsService implements UserDetailsService {
 
   private final UserRepository userRepository;
@@ -29,15 +33,19 @@ public class CustomUserDetailsService implements UserDetailsService {
             .findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-    return new CustomUserDetails(user);
+    return new UserPrincipal(user);
   }
 
-  public static class CustomUserDetails implements UserDetails {
+  public static class UserPrincipal implements UserDetails {
 
-    private final UserAccount user;
+    private final String username;
+    private final Set<Role> roles;
+    private final boolean active;
 
-    public CustomUserDetails(UserAccount user) {
-      this.user = user;
+    public UserPrincipal(UserAccount user) {
+      this.username = user.getUsername();
+      this.roles = Optional.ofNullable(user.getRoles()).orElse(Set.of());
+      this.active = user.isActive();
     }
 
     @Override
@@ -45,11 +53,10 @@ public class CustomUserDetailsService implements UserDetailsService {
       Set<GrantedAuthority> authorities = new HashSet<>();
 
       // Add roles
-      user.getRoles()
-          .forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName())));
+      roles.forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName())));
 
       // Add permissions from roles
-      user.getRoles().stream()
+      roles.stream()
           .map(Role::getPermissions) // Stream<Set<Permission>>
           .flatMap(Set::stream) // flatten to Stream<Permission>
           .forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.getName())));
@@ -59,12 +66,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public String getPassword() {
-      return user.getPassword();
+      return null;
     }
 
     @Override
     public String getUsername() {
-      return user.getUsername();
+      return username;
     }
 
     @Override
@@ -74,7 +81,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public boolean isAccountNonLocked() {
-      return user.isActive();
+      return active;
     }
 
     @Override
@@ -84,11 +91,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public boolean isEnabled() {
-      return user.isActive();
-    }
-
-    public UserAccount getUserAccount() {
-      return user;
+      return active;
     }
   }
 }

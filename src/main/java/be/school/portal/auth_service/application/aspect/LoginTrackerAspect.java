@@ -2,14 +2,14 @@ package be.school.portal.auth_service.application.aspect;
 
 import be.school.portal.auth_service.application.dto.LoginRequest;
 import be.school.portal.auth_service.application.services.LoginAttemptService;
-import be.school.portal.auth_service.common.exceptions.InvalidCredentialException;
-import be.school.portal.auth_service.common.exceptions.LoginException;
-import be.school.portal.auth_service.common.exceptions.UserInvalidStateException;
 import be.school.portal.auth_service.domain.enums.LoginAction;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -23,20 +23,25 @@ public class LoginTrackerAspect {
     this.loginAttemptService = loginAttemptService;
   }
 
-  @AfterReturning(value = "@annotation(trackLogin) && args(loginRequest,..)")
+  @AfterReturning(
+      value =
+          "@annotation( be.school.portal.auth_service.application.annotations.TrackLogin) && args(loginRequest,..)")
   public void afterSuccess(LoginRequest loginRequest) {
     loginAttemptService.recordSuccess(loginRequest.username(), LoginAction.LOGIN_SUCCESS);
   }
 
-  @AfterThrowing(value = "@annotation(trackLogin) && args(loginRequest,..)", throwing = "ex")
-  public void afterFailure(LoginRequest loginRequest, LoginException ex) {
+  @AfterThrowing(
+      value =
+          "@annotation(be.school.portal.auth_service.application.annotations.TrackLogin) && args(loginRequest,..)",
+      throwing = "ex")
+  public void afterFailure(LoginRequest loginRequest, Exception ex) {
     loginAttemptService.recordFailure(loginRequest.username(), getLoginActionFromException(ex));
   }
 
-  private LoginAction getLoginActionFromException(LoginException ex) {
-    if (ex instanceof InvalidCredentialException) {
+  private LoginAction getLoginActionFromException(Exception ex) {
+    if (ex instanceof BadCredentialsException) {
       return LoginAction.LOGIN_FAILED_INVALID_CREDENTIAL;
-    } else if (ex instanceof UserInvalidStateException) {
+    } else if (ex instanceof LockedException || ex instanceof DisabledException) {
       return LoginAction.LOGIN_FAILED_INVALID_STATE;
     }
 

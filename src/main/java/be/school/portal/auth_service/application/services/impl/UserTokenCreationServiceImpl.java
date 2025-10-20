@@ -7,21 +7,24 @@ import be.school.portal.auth_service.common.utils.JtiUtil;
 import be.school.portal.auth_service.common.utils.ZonedDateTimeUtil;
 import be.school.portal.auth_service.domain.entities.RefreshToken;
 import be.school.portal.auth_service.domain.entities.UserAccount;
-import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
+import be.school.portal.auth_service.infrastructure.repositories.RefreshTokenRepository;
 import jakarta.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service implementation for creating JWT access and refresh tokens for a user. Handles token
  * generation, refresh token persistence, and JTI creation.
  */
 @Service
+@Transactional(propagation = Propagation.REQUIRED)
 public class UserTokenCreationServiceImpl implements UserTokenCreationService {
 
-  private final UserRepository userRepository;
   private final JwtTokenComponent jwtTokenComponent;
+  private final RefreshTokenRepository refreshTokenRepository;
   private final String jtiSalt;
   private final long accessExpirationMs;
   private final long refreshExpirationMs;
@@ -29,20 +32,20 @@ public class UserTokenCreationServiceImpl implements UserTokenCreationService {
   /**
    * Constructs a new UserTokenCreationServiceImpl.
    *
-   * @param userRepository the user repository for persistence operations
+   * @param refreshTokenRepository the refresh token repository
    * @param jwtTokenComponent the component for JWT token operations
    * @param accessExpirationMs access token expiration in milliseconds
    * @param refreshExpirationMs refresh token expiration in milliseconds
    * @param jtiSalt the salt used for generating the JWT ID (JTI)
    */
   public UserTokenCreationServiceImpl(
-      UserRepository userRepository,
       JwtTokenComponent jwtTokenComponent,
+      RefreshTokenRepository refreshTokenRepository,
       @Value("${jwt.access-expiration}") long accessExpirationMs,
       @Value("${jwt.refresh-expiration}") long refreshExpirationMs,
       @Value("${jwt.jti-salt}") String jtiSalt) {
-    this.userRepository = userRepository;
     this.jwtTokenComponent = jwtTokenComponent;
+    this.refreshTokenRepository = refreshTokenRepository;
     this.jtiSalt = jtiSalt;
     this.accessExpirationMs = accessExpirationMs;
     this.refreshExpirationMs = refreshExpirationMs;
@@ -80,7 +83,7 @@ public class UserTokenCreationServiceImpl implements UserTokenCreationService {
     userAccount.addRefreshToken(refreshToken);
 
     // Persist user with new refresh token
-    userRepository.save(userAccount);
+    refreshTokenRepository.save(refreshToken);
 
     // Create JTI for refresh token
     final var jti = JtiUtil.createJti(refreshToken.getId(), jtiSalt);

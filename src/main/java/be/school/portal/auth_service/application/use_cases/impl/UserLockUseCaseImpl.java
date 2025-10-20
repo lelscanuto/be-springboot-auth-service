@@ -2,7 +2,7 @@ package be.school.portal.auth_service.application.use_cases.impl;
 
 import be.school.portal.auth_service.application.mappers.UserProjectionMapper;
 import be.school.portal.auth_service.application.use_cases.UserLockUseCase;
-import be.school.portal.auth_service.common.exceptions.UserNotFoundException;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.domain.enums.UserStatus;
 import be.school.portal.auth_service.domain.projections.UserProjection;
 import be.school.portal.auth_service.infrastructure.repositories.UserRepository;
@@ -50,13 +50,15 @@ public class UserLockUseCaseImpl implements UserLockUseCase {
   /**
    * Locks a user account by setting its {@link UserStatus} to {@code LOCKED}.
    *
-   * <p>If the specified user cannot be found, a {@link UserNotFoundException} is thrown. This
-   * method executes asynchronously in a separate thread to prevent blocking the caller.
+   * <p>If the specified user cannot be found, a {@link
+   * org.springframework.security.core.userdetails.UsernameNotFoundException} is thrown. This method
+   * executes asynchronously in a separate thread to prevent blocking the caller.
    *
    * @param username the username of the account to lock
    * @return a {@link CompletableFuture} containing a {@link UserProjection} representation of the
    *     locked user
-   * @throws UserNotFoundException if no user with the given username exists
+   * @throws org.springframework.security.core.userdetails.UsernameNotFoundException if no user with
+   *     the given username exists
    */
   @Override
   @Async
@@ -68,7 +70,9 @@ public class UserLockUseCaseImpl implements UserLockUseCase {
     final var existingUser =
         userRepository
             .findByUsername(username)
-            .orElseThrow(() -> UserNotFoundException.ofUsername(username));
+            .orElseThrow(
+                () ->
+                    SecurityExceptionFactory.UsernameNotFoundExceptionFactory.ofUsername(username));
 
     // Update the user's status to LOCKED
     existingUser.setStatus(UserStatus.LOCKED);
