@@ -49,7 +49,7 @@ public class SecurityConfig {
                 // Public auth endpoints
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**")
                     .permitAll()
-                    .requestMatchers("/api/auth/login", "/api/auth/token/refresh")
+                    .requestMatchers("/api/v1/auth/login", "/api/v1/auth/token/refresh")
                     .permitAll()
                     // Swagger endpoints
                     .requestMatchers(
