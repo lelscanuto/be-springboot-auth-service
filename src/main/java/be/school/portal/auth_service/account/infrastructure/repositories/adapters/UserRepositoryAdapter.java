@@ -20,4 +20,14 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
   public Optional<UserAccount> findByUsername(@Nonnull String username) {
     return userRepository.findByUsername(username);
   }
+
+  @Override
+  public UserAccount save(@Nonnull UserAccount userAccount) {
+    return userRepository.save(userAccount);
+  }
+
+  @Override
+  public UserAccount saveAndFlush(@Nonnull UserAccount userAccount) {
+    return userRepository.saveAndFlush(userAccount);
+  }
 }
