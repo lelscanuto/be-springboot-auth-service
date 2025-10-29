@@ -6,12 +6,14 @@ import be.school.portal.auth_service.common.dto.UpdateRoleRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Role Management", description = "APIs for managing roles")
 public interface RoleManagementController {
 
   @Operation(
+      security = {@SecurityRequirement(name = "bearerAuth")},
       summary = "Create a new role",
       description = "Creates a role with the specified details.")
   @ApiResponses(
@@ -22,7 +24,10 @@ public interface RoleManagementController {
       })
   RoleResponse createRole(CreateRoleRequest createRoleRequest);
 
-  @Operation(summary = "Update an existing role", description = "Updates role details by ID.")
+  @Operation(
+      security = {@SecurityRequirement(name = "bearerAuth")},
+      summary = "Update an existing role",
+      description = "Updates role details by ID.")
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "Role updated successfully"),
@@ -31,7 +36,10 @@ public interface RoleManagementController {
       })
   RoleResponse updateRole(Long roleId, UpdateRoleRequest updateRoleRequest);
 
-  @Operation(summary = "Delete a role", description = "Deletes a role by its ID.")
+  @Operation(
+      security = {@SecurityRequirement(name = "bearerAuth")},
+      summary = "Delete a role",
+      description = "Deletes a role by its ID.")
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "Role deleted successfully"),
