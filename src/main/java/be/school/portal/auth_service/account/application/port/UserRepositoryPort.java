@@ -10,4 +10,6 @@ public interface UserRepositoryPort {
   UserAccount save(@Nonnull UserAccount userAccount);
 
   UserAccount saveAndFlush(@Nonnull UserAccount userAccount);
+
+  boolean existsByRolesName(String roleName);
 }

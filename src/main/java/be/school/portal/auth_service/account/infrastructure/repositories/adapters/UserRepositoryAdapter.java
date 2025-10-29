@@ -30,4 +30,9 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
   public UserAccount saveAndFlush(@Nonnull UserAccount userAccount) {
     return userRepository.saveAndFlush(userAccount);
   }
+
+  @Override
+  public boolean existsByRolesName(String roleName) {
+    return userRepository.existsByRolesName(roleName);
+  }
 }

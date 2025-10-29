@@ -5,7 +5,12 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
-  TEST(HttpStatus.INTERNAL_SERVER_ERROR);
+  PERMISSION_NOT_FOUND(HttpStatus.NOT_FOUND),
+  ROLE_NOT_FOUND(HttpStatus.NOT_FOUND),
+  ROLE_CONFLICT(HttpStatus.CONFLICT),
+  ROLE_PERMISSION_CONFLICT(HttpStatus.CONFLICT),
+  ROLE_PERMISSION_NOT_EXISTS(HttpStatus.NOT_FOUND),
+  ROLE_STILL_ASSIGNED_TO_ACTIVE_USER(HttpStatus.UNPROCESSABLE_ENTITY);
 
   private final HttpStatus httpStatus;
 
