@@ -1,6 +1,6 @@
 package be.school.portal.auth_service.common.config;
 
-import be.school.portal.auth_service.application.providers.JwtAuthenticationProvider;
+import be.school.portal.auth_service.account.application.internal.services.impl.JwtAuthenticationServiceImpl;
 import be.school.portal.auth_service.common.builders.ProblemDetailFactory;
 import be.school.portal.auth_service.common.handler.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,12 +13,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -26,12 +28,12 @@ public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final ObjectMapper objectMapper;
-  private final JwtAuthenticationProvider jwtAuthenticationProvider;
+  private final JwtAuthenticationServiceImpl jwtAuthenticationProvider;
 
   public SecurityConfig(
       JwtAuthenticationFilter jwtAuthenticationFilter,
       ObjectMapper objectMapper,
-      JwtAuthenticationProvider jwtAuthenticationProvider) {
+      JwtAuthenticationServiceImpl jwtAuthenticationProvider) {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     this.objectMapper = objectMapper;
     this.jwtAuthenticationProvider = jwtAuthenticationProvider;
