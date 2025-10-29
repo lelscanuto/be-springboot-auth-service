@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.account.common.annotations;
+package be.school.portal.auth_service.account.application.aspects;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

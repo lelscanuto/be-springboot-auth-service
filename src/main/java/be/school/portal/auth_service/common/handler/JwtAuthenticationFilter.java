@@ -1,6 +1,6 @@
-package be.school.portal.auth_service.account.common.handler;
+package be.school.portal.auth_service.common.handler;
 
-import be.school.portal.auth_service.account.common.component.JwtTokenComponent;
+import be.school.portal.auth_service.common.component.JwtTokenComponent;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,6 +1,6 @@
-package be.school.portal.auth_service.account.common.builders;
+package be.school.portal.auth_service.common.builders;
 
-import be.school.portal.auth_service.account.common.utils.ZonedDateTimeUtil;
+import be.school.portal.auth_service.common.utils.ZonedDateTimeUtil;
 import java.net.URI;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

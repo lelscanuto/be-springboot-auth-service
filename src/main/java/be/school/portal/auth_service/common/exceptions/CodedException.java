@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.account.common.exceptions;
+package be.school.portal.auth_service.common.exceptions;
 
 import jakarta.annotation.Nonnull;
 

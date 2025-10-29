@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.account.common.utils;
+package be.school.portal.auth_service.common.utils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

@@ -1,7 +1,7 @@
 package be.school.portal.auth_service.permission.domain.exceptions;
 
-import be.school.portal.auth_service.account.common.exceptions.CodedException;
-import be.school.portal.auth_service.account.common.exceptions.ErrorCode;
+import be.school.portal.auth_service.common.exceptions.CodedException;
+import be.school.portal.auth_service.common.exceptions.ErrorCode;
 import jakarta.annotation.Nonnull;
 import java.io.Serial;
 

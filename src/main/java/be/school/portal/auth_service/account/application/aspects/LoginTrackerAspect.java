@@ -1,6 +1,6 @@
 package be.school.portal.auth_service.account.application.aspects;
 
-import be.school.portal.auth_service.account.application.dto.LoginRequest;
+import be.school.portal.auth_service.common.dto.LoginRequest;
 import be.school.portal.auth_service.account.application.internal.services.LoginAttemptService;
 import be.school.portal.auth_service.account.domain.enums.LoginAction;
 import lombok.extern.slf4j.Slf4j;

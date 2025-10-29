@@ -1,8 +1,8 @@
-package be.school.portal.auth_service.account.common.config;
+package be.school.portal.auth_service.common.config;
 
 import be.school.portal.auth_service.account.application.internal.services.impl.JwtAuthenticationServiceImpl;
-import be.school.portal.auth_service.account.common.builders.ProblemDetailFactory;
-import be.school.portal.auth_service.account.common.handler.JwtAuthenticationFilter;
+import be.school.portal.auth_service.common.builders.ProblemDetailFactory;
+import be.school.portal.auth_service.common.handler.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;

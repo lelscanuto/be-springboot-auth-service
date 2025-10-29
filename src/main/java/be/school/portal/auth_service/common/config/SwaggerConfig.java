@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.account.common.config;
+package be.school.portal.auth_service.common.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

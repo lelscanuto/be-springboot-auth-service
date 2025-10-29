@@ -1,6 +1,6 @@
-package be.school.portal.auth_service.account.common.config;
+package be.school.portal.auth_service.common.config;
 
-import be.school.portal.auth_service.account.common.utils.ZonedDateTimeUtil;
+import be.school.portal.auth_service.common.utils.ZonedDateTimeUtil;
 import java.util.Optional;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

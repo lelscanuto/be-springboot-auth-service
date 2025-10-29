@@ -1,7 +1,7 @@
-package be.school.portal.auth_service.account.common.utils;
+package be.school.portal.auth_service.common.utils;
 
 import be.school.portal.auth_service.account.application.internal.services.CustomUserDetailsService;
-import be.school.portal.auth_service.account.common.builders.SecurityExceptionFactory;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.account.domain.entities.UserAccount;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;

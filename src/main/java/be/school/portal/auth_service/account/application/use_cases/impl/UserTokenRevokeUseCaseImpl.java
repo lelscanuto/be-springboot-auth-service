@@ -1,12 +1,12 @@
 package be.school.portal.auth_service.account.application.use_cases.impl;
 
-import be.school.portal.auth_service.account.application.dto.TokenRequest;
+import be.school.portal.auth_service.common.dto.TokenRequest;
 import be.school.portal.auth_service.account.application.internal.services.UserTokenRevokeService;
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
 import be.school.portal.auth_service.account.application.use_cases.UserTokenRevokeUseCase;
-import be.school.portal.auth_service.account.common.builders.SecurityExceptionFactory;
-import be.school.portal.auth_service.account.common.component.RefreshTokenProcessor;
-import be.school.portal.auth_service.account.common.utils.SecurityContextUtil;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
+import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
+import be.school.portal.auth_service.common.utils.SecurityContextUtil;
 import jakarta.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.scheduling.annotation.Async;

@@ -1,8 +1,8 @@
 package be.school.portal.auth_service.account.application.adapters;
 
-import be.school.portal.auth_service.account.application.dto.LoginRequest;
-import be.school.portal.auth_service.account.application.dto.LoginResponse;
-import be.school.portal.auth_service.account.application.dto.TokenRequest;
+import be.school.portal.auth_service.common.dto.LoginRequest;
+import be.school.portal.auth_service.common.dto.LoginResponse;
+import be.school.portal.auth_service.common.dto.TokenRequest;
 import be.school.portal.auth_service.account.application.use_cases.UserLoginUseCase;
 import be.school.portal.auth_service.account.application.use_cases.UserTokenRefreshUseCase;
 import be.school.portal.auth_service.account.application.use_cases.UserTokenRevokeUseCase;

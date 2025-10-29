@@ -1,6 +1,6 @@
-package be.school.portal.auth_service.account.common.component;
+package be.school.portal.auth_service.common.component;
 
-import be.school.portal.auth_service.account.common.utils.ZonedDateTimeUtil;
+import be.school.portal.auth_service.common.utils.ZonedDateTimeUtil;
 import be.school.portal.auth_service.account.domain.entities.UserAccount;
 import be.school.portal.auth_service.role.domain.entities.Role;
 import io.jsonwebtoken.Claims;

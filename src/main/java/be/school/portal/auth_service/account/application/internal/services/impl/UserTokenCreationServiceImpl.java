@@ -1,10 +1,10 @@
 package be.school.portal.auth_service.account.application.internal.services.impl;
 
 import be.school.portal.auth_service.account.application.internal.services.UserTokenCreationService;
-import be.school.portal.auth_service.account.common.component.JwtTokenComponent;
-import be.school.portal.auth_service.account.common.component.JwtUserDetails;
-import be.school.portal.auth_service.account.common.utils.JtiUtil;
-import be.school.portal.auth_service.account.common.utils.ZonedDateTimeUtil;
+import be.school.portal.auth_service.common.component.JwtTokenComponent;
+import be.school.portal.auth_service.common.component.JwtUserDetails;
+import be.school.portal.auth_service.common.utils.JtiUtil;
+import be.school.portal.auth_service.common.utils.ZonedDateTimeUtil;
 import be.school.portal.auth_service.account.domain.entities.RefreshToken;
 import be.school.portal.auth_service.account.domain.entities.UserAccount;
 import be.school.portal.auth_service.account.infrastructure.repositories.RefreshTokenRepository;

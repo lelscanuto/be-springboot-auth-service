@@ -1,8 +1,8 @@
-package be.school.portal.auth_service.account.common.handler;
+package be.school.portal.auth_service.common.handler;
 
-import be.school.portal.auth_service.account.common.builders.ProblemDetailFactory;
-import be.school.portal.auth_service.account.common.exceptions.CodedException;
-import be.school.portal.auth_service.account.common.utils.ZonedDateTimeUtil;
+import be.school.portal.auth_service.common.builders.ProblemDetailFactory;
+import be.school.portal.auth_service.common.exceptions.CodedException;
+import be.school.portal.auth_service.common.utils.ZonedDateTimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

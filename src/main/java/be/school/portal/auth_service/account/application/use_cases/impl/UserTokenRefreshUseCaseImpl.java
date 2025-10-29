@@ -1,13 +1,13 @@
 package be.school.portal.auth_service.account.application.use_cases.impl;
 
-import be.school.portal.auth_service.account.application.dto.LoginResponse;
-import be.school.portal.auth_service.account.application.dto.TokenRequest;
+import be.school.portal.auth_service.common.dto.LoginResponse;
+import be.school.portal.auth_service.common.dto.TokenRequest;
 import be.school.portal.auth_service.account.application.internal.services.UserTokenRenewalService;
 import be.school.portal.auth_service.account.application.mappers.LoginResponseMapper;
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
 import be.school.portal.auth_service.account.application.use_cases.UserTokenRefreshUseCase;
-import be.school.portal.auth_service.account.common.builders.SecurityExceptionFactory;
-import be.school.portal.auth_service.account.common.component.RefreshTokenProcessor;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
+import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.Valid;
 import java.util.concurrent.CompletableFuture;

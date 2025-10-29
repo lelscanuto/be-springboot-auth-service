@@ -2,7 +2,7 @@ package be.school.portal.auth_service.account.application.internal.services.impl
 
 import be.school.portal.auth_service.account.application.internal.services.UserTokenRevokeService;
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
-import be.school.portal.auth_service.account.common.utils.JtiUtil;
+import be.school.portal.auth_service.common.utils.JtiUtil;
 import be.school.portal.auth_service.account.domain.entities.UserAccount;
 import jakarta.annotation.Nonnull;
 import org.springframework.beans.factory.annotation.Value;

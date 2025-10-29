@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.account.common.builders;
+package be.school.portal.auth_service.common.builders;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;

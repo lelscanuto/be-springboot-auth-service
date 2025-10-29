@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.account.application.dto;
+package be.school.portal.auth_service.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Set;

@@ -3,7 +3,7 @@ package be.school.portal.auth_service.account.application.use_cases.impl;
 import be.school.portal.auth_service.account.application.mappers.UserProjectionMapper;
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
 import be.school.portal.auth_service.account.application.use_cases.UserLockUseCase;
-import be.school.portal.auth_service.account.common.builders.SecurityExceptionFactory;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.account.domain.enums.UserStatus;
 import be.school.portal.auth_service.account.domain.projections.UserProjection;
 import java.util.concurrent.CompletableFuture;

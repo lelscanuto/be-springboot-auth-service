@@ -3,7 +3,7 @@ package be.school.portal.auth_service.account.application.internal.services.impl
 import be.school.portal.auth_service.account.application.internal.services.AuthenticationService;
 import be.school.portal.auth_service.account.application.internal.services.CustomUserDetailsService;
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
-import be.school.portal.auth_service.account.common.builders.SecurityExceptionFactory;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.account.domain.entities.UserAccount;
 import lombok.Getter;
 import org.springframework.security.authentication.*;

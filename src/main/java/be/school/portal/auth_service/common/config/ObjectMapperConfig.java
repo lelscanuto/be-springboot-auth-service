@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.account.common.config;
+package be.school.portal.auth_service.common.config;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

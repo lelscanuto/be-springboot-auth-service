@@ -1,7 +1,8 @@
 package be.school.portal.auth_service.account.domain.entities;
 
-import be.school.portal.auth_service.account.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.account.domain.enums.UserStatus;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
+import be.school.portal.auth_service.common.entities.AuditableEntity;
 import be.school.portal.auth_service.permission.domain.entities.Permission;
 import be.school.portal.auth_service.role.domain.entities.Role;
 import jakarta.persistence.*;
@@ -18,8 +19,8 @@ import org.springframework.security.access.AccessDeniedException;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class UserAccount {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+public class UserAccount extends AuditableEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

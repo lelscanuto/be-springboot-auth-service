@@ -1,6 +1,6 @@
 package be.school.portal.auth_service.account.application.mappers;
 
-import be.school.portal.auth_service.account.application.dto.LoginResponse;
+import be.school.portal.auth_service.common.dto.LoginResponse;
 import be.school.portal.auth_service.account.application.internal.services.UserTokenCreationService;
 import be.school.portal.auth_service.account.domain.entities.UserAccount;
 import org.mapstruct.Mapper;
