@@ -1,11 +1,14 @@
 package be.school.portal.auth_service.role.application.adapters;
 
+import be.school.portal.auth_service.common.annotations.Trace;
 import be.school.portal.auth_service.common.dto.RoleResponse;
 import be.school.portal.auth_service.role.application.mappers.RoleResponseMapper;
 import be.school.portal.auth_service.role.application.use_cases.RoleAddPermissionUseCase;
 import be.school.portal.auth_service.role.application.use_cases.RoleRemovePermissionUseCase;
 import be.school.portal.auth_service.role.presentation.facade.RolePermissionFacade;
 import jakarta.annotation.Nonnull;
+import java.util.concurrent.CompletableFuture;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,20 +21,21 @@ import org.springframework.stereotype.Service;
  * for external consumption.
  */
 @Service
-public class RolePermissionAdapter implements RolePermissionFacade {
+@Trace(logArgsAndResult = true)
+public class AsyncRolePermissionApiAdapter implements RolePermissionFacade {
 
   private final RoleAddPermissionUseCase roleAddPermissionUseCase;
   private final RoleRemovePermissionUseCase roleRemovePermissionUseCase;
   private final RoleResponseMapper roleResponseMapper;
 
   /**
-   * Constructs a new {@link RolePermissionAdapter}.
+   * Constructs a new {@link AsyncRolePermissionApiAdapter}.
    *
    * @param roleAddPermissionUseCase use case for adding permissions to roles
    * @param roleRemovePermissionUseCase use case for removing permissions from roles
    * @param roleResponseMapper mapper for converting role entities to response DTOs
    */
-  public RolePermissionAdapter(
+  public AsyncRolePermissionApiAdapter(
       RoleAddPermissionUseCase roleAddPermissionUseCase,
       RoleRemovePermissionUseCase roleRemovePermissionUseCase,
       RoleResponseMapper roleResponseMapper) {
@@ -48,9 +52,12 @@ public class RolePermissionAdapter implements RolePermissionFacade {
    * @return a {@link RoleResponse} representing the updated role
    */
   @Override
-  public RoleResponse addPermission(@Nonnull Long roleId, @Nonnull Long permissionId) {
-    return roleResponseMapper.toRoleResponse(
-        roleAddPermissionUseCase.addPermission(roleId, permissionId));
+  @Async
+  public CompletableFuture<RoleResponse> addPermission(
+      @Nonnull Long roleId, @Nonnull Long permissionId) {
+    return CompletableFuture.completedFuture(
+        roleResponseMapper.toRoleResponse(
+            roleAddPermissionUseCase.addPermission(roleId, permissionId)));
   }
 
   /**
@@ -61,8 +68,11 @@ public class RolePermissionAdapter implements RolePermissionFacade {
    * @return a {@link RoleResponse} representing the updated role
    */
   @Override
-  public RoleResponse removePermission(@Nonnull Long roleId, @Nonnull Long permissionId) {
-    return roleResponseMapper.toRoleResponse(
-        roleRemovePermissionUseCase.removePermission(roleId, permissionId));
+  @Async
+  public CompletableFuture<RoleResponse> removePermission(
+      @Nonnull Long roleId, @Nonnull Long permissionId) {
+    return CompletableFuture.completedFuture(
+        roleResponseMapper.toRoleResponse(
+            roleRemovePermissionUseCase.removePermission(roleId, permissionId)));
   }
 }

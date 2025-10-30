@@ -3,16 +3,21 @@ package be.school.portal.auth_service.account.infrastructure.repositories.adapte
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
 import be.school.portal.auth_service.account.domain.entities.UserAccount;
 import be.school.portal.auth_service.account.infrastructure.repositories.UserRepository;
+import be.school.portal.auth_service.common.annotations.Trace;
 import jakarta.annotation.Nonnull;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+@Trace
 @Component
-public class UserRepositoryAdapter implements UserRepositoryPort {
+@Transactional(propagation = Propagation.REQUIRED)
+public class UserRepositoryJpaAdapter implements UserRepositoryPort {
 
   private final UserRepository userRepository;
 
-  public UserRepositoryAdapter(UserRepository userRepository) {
+  public UserRepositoryJpaAdapter(UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 

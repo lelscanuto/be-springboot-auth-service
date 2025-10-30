@@ -1,5 +1,6 @@
 package be.school.portal.auth_service.role.application.adapters;
 
+import be.school.portal.auth_service.common.annotations.Trace;
 import be.school.portal.auth_service.common.dto.CreateRoleRequest;
 import be.school.portal.auth_service.common.dto.RoleResponse;
 import be.school.portal.auth_service.common.dto.UpdateRoleRequest;
@@ -9,17 +10,20 @@ import be.school.portal.auth_service.role.application.use_cases.RoleDeleteUseCas
 import be.school.portal.auth_service.role.application.use_cases.RoleUpdateUseCase;
 import be.school.portal.auth_service.role.presentation.facade.RoleManagementFacade;
 import jakarta.annotation.Nonnull;
+import java.util.concurrent.CompletableFuture;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RoleManagementAdapter implements RoleManagementFacade {
+@Trace(logArgsAndResult = true)
+public class AsyncRoleManagementApiAdapter implements RoleManagementFacade {
 
   private final RoleCreateUseCase roleCreateUseCase;
   private final RoleUpdateUseCase roleUpdateUseCase;
   private final RoleDeleteUseCase roleDeleteUseCase;
   private final RoleResponseMapper roleResponseMapper;
 
-  public RoleManagementAdapter(
+  public AsyncRoleManagementApiAdapter(
       RoleCreateUseCase roleCreateUseCase,
       RoleUpdateUseCase roleUpdateUseCase,
       RoleDeleteUseCase roleDeleteUseCase,
@@ -31,17 +35,24 @@ public class RoleManagementAdapter implements RoleManagementFacade {
   }
 
   @Override
-  public RoleResponse createRole(@Nonnull CreateRoleRequest createRoleRequest) {
-    return roleResponseMapper.toRoleResponse(roleCreateUseCase.create(createRoleRequest));
+  @Async
+  public CompletableFuture<RoleResponse> createRole(@Nonnull CreateRoleRequest createRoleRequest) {
+    return CompletableFuture.completedFuture(
+        roleResponseMapper.toRoleResponse(roleCreateUseCase.create(createRoleRequest)));
   }
 
   @Override
-  public RoleResponse updateRole(@Nonnull Long id, UpdateRoleRequest updateRoleRequest) {
-    return roleResponseMapper.toRoleResponse(roleUpdateUseCase.update(id, updateRoleRequest));
+  @Async
+  public CompletableFuture<RoleResponse> updateRole(
+      @Nonnull Long id, UpdateRoleRequest updateRoleRequest) {
+    return CompletableFuture.completedFuture(
+        roleResponseMapper.toRoleResponse(roleUpdateUseCase.update(id, updateRoleRequest)));
   }
 
   @Override
-  public RoleResponse deleteRole(@Nonnull Long roleId) {
-    return roleResponseMapper.toRoleResponse(roleDeleteUseCase.delete(roleId));
+  @Async
+  public CompletableFuture<RoleResponse> deleteRole(@Nonnull Long roleId) {
+    return CompletableFuture.completedFuture(
+        roleResponseMapper.toRoleResponse(roleDeleteUseCase.delete(roleId)));
   }
 }

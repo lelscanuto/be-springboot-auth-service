@@ -3,6 +3,7 @@ package be.school.portal.auth_service.role.presentation.api.impl;
 import be.school.portal.auth_service.common.dto.RoleResponse;
 import be.school.portal.auth_service.role.presentation.api.RolePermissionController;
 import be.school.portal.auth_service.role.presentation.facade.RolePermissionFacade;
+import java.util.concurrent.CompletableFuture;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class RolePermissionControllerImpl implements RolePermissionController {
   @Override
   @PutMapping
   @PreAuthorize("hasRole('ADMIN')")
-  public RoleResponse addPermission(
+  public CompletableFuture<RoleResponse> addPermission(
       @PathVariable("roleId") Long roleId, @PathVariable("permissionId") Long permissionId) {
     return rolePermissionFacade.addPermission(roleId, permissionId);
   }
@@ -27,7 +28,7 @@ public class RolePermissionControllerImpl implements RolePermissionController {
   @Override
   @DeleteMapping
   @PreAuthorize("hasRole('ADMIN')")
-  public RoleResponse removePermission(
+  public CompletableFuture<RoleResponse> removePermission(
       @PathVariable("roleId") Long roleId, @PathVariable("permissionId") Long permissionId) {
     return rolePermissionFacade.removePermission(roleId, permissionId);
   }

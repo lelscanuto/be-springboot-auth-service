@@ -1,12 +1,12 @@
 package be.school.portal.auth_service.account.application.use_cases.impl;
 
-import be.school.portal.auth_service.common.dto.LoginRequest;
-import be.school.portal.auth_service.common.dto.LoginResponse;
+import be.school.portal.auth_service.account.application.aspects.TrackLogin;
+import be.school.portal.auth_service.account.application.dto.UserLoginDTO;
 import be.school.portal.auth_service.account.application.internal.services.UserTokenCreationService;
 import be.school.portal.auth_service.account.application.internal.services.impl.JwtAuthenticationServiceImpl;
-import be.school.portal.auth_service.account.application.mappers.LoginResponseMapper;
 import be.school.portal.auth_service.account.application.use_cases.UserLoginUseCase;
-import be.school.portal.auth_service.account.application.aspects.TrackLogin;
+import be.school.portal.auth_service.common.dto.LoginRequest;
+import be.school.portal.auth_service.common.dto.LoginResponse;
 import jakarta.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.scheduling.annotation.Async;
@@ -34,16 +34,12 @@ public class UserLoginUseCaseImpl implements UserLoginUseCase {
 
   private final AuthenticationManager authenticationManager;
   private final UserTokenCreationService userTokenCreationService;
-  private final LoginResponseMapper loginResponseMapper;
 
   public UserLoginUseCaseImpl(
       AuthenticationManager authenticationManager,
-      UserTokenCreationService userTokenCreationService,
-      LoginResponseMapper loginResponseMapper) {
+      UserTokenCreationService userTokenCreationService) {
     this.authenticationManager = authenticationManager;
-
     this.userTokenCreationService = userTokenCreationService;
-    this.loginResponseMapper = loginResponseMapper;
   }
 
   /**
@@ -68,9 +64,8 @@ public class UserLoginUseCaseImpl implements UserLoginUseCase {
    *     for the given username
    */
   @Override
-  @Async
   @TrackLogin
-  public CompletableFuture<LoginResponse> login(@Nonnull LoginRequest loginRequest) {
+  public UserLoginDTO login(@Nonnull LoginRequest loginRequest) {
 
     Authentication authentication =
         authenticationManager.authenticate(
@@ -78,15 +73,14 @@ public class UserLoginUseCaseImpl implements UserLoginUseCase {
                 loginRequest.username(), loginRequest.password() // raw password
                 ));
 
-    JwtAuthenticationServiceImpl.UserPrincipalContext userPrincipalContext =
+    JwtAuthenticationServiceImpl.UserPrincipalContext userPrincipalHolder =
         (JwtAuthenticationServiceImpl.UserPrincipalContext) authentication.getPrincipal();
 
     // Generate JWT token
     final UserTokenCreationService.UserToken token =
-        userTokenCreationService.create(userPrincipalContext.getContext());
+        userTokenCreationService.create(userPrincipalHolder.getContext());
 
     // Return response wrapped in CompletableFuture
-    return CompletableFuture.completedFuture(
-        loginResponseMapper.toLoginResponse(userPrincipalContext.getContext(), token));
+    return UserLoginDTO.ofAccountAndToken(userPrincipalHolder.getContext(), token);
   }
 }

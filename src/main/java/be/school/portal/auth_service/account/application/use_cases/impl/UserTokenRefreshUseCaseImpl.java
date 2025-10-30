@@ -1,17 +1,16 @@
 package be.school.portal.auth_service.account.application.use_cases.impl;
 
-import be.school.portal.auth_service.common.dto.LoginResponse;
-import be.school.portal.auth_service.common.dto.TokenRequest;
+import be.school.portal.auth_service.account.application.dto.UserLoginDTO;
 import be.school.portal.auth_service.account.application.internal.services.UserTokenRenewalService;
-import be.school.portal.auth_service.account.application.mappers.LoginResponseMapper;
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
 import be.school.portal.auth_service.account.application.use_cases.UserTokenRefreshUseCase;
 import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
+import be.school.portal.auth_service.common.dto.LoginResponse;
+import be.school.portal.auth_service.common.dto.TokenRequest;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.Valid;
 import java.util.concurrent.CompletableFuture;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +29,6 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
 
   private final UserRepositoryPort userRepositoryPort;
   private final UserTokenRenewalService userTokenRenewalService;
-  private final LoginResponseMapper loginResponseMapper;
   private final RefreshTokenProcessor refreshTokenProcessor;
 
   /**
@@ -38,17 +36,14 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
    *
    * @param userRepositoryPort the repository for user data access
    * @param userTokenRenewalService the service for renewing user tokens
-   * @param loginResponseMapper the mapper for creating login responses
    * @param refreshTokenProcessor the component for JWT token operations
    */
   public UserTokenRefreshUseCaseImpl(
       UserRepositoryPort userRepositoryPort,
       UserTokenRenewalService userTokenRenewalService,
-      LoginResponseMapper loginResponseMapper,
       RefreshTokenProcessor refreshTokenProcessor) {
     this.userRepositoryPort = userRepositoryPort;
     this.userTokenRenewalService = userTokenRenewalService;
-    this.loginResponseMapper = loginResponseMapper;
     this.refreshTokenProcessor = refreshTokenProcessor;
   }
 
@@ -72,8 +67,7 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
    * @throws org.springframework.security.authentication.DisabledException if the user is inactive
    */
   @Override
-  @Async
-  public CompletableFuture<LoginResponse> refresh(@Valid @Nonnull TokenRequest tokenRequest) {
+  public UserLoginDTO refresh(@Valid @Nonnull TokenRequest tokenRequest) {
 
     // Extract the refresh token from the request
     final var refreshToken = tokenRequest.token();
@@ -97,7 +91,6 @@ public class UserTokenRefreshUseCaseImpl implements UserTokenRefreshUseCase {
     // Renew tokens for the user
     final var userToken = userTokenRenewalService.renewTokens(existingUser, refreshTokenData.jti());
 
-    return CompletableFuture.completedFuture(
-        loginResponseMapper.toLoginResponse(existingUser, userToken));
+    return UserLoginDTO.ofAccountAndToken(existingUser, userToken);
   }
 }

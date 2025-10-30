@@ -1,5 +1,6 @@
 package be.school.portal.auth_service.common.dto;
 
+import be.school.portal.auth_service.common.annotations.Hide;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Set;
 
@@ -8,10 +9,12 @@ public record LoginResponse(
     @Schema(
             description = "JWT access token for authentication",
             example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+        @Hide(Hide.MaskStrategy.MASK)
         String accessToken,
     @Schema(
             description = "JWT refresh token used to obtain new access token",
             example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+        @Hide(Hide.MaskStrategy.MASK)
         String refreshToken,
     @Schema(description = "Username of the authenticated user", example = "john.doe")
         String username,

@@ -1,14 +1,14 @@
 package be.school.portal.auth_service.account.application.use_cases.impl;
 
-import be.school.portal.auth_service.common.dto.TokenRequest;
 import be.school.portal.auth_service.account.application.internal.services.UserTokenRevokeService;
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
 import be.school.portal.auth_service.account.application.use_cases.UserTokenRevokeUseCase;
 import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.common.component.RefreshTokenProcessor;
+import be.school.portal.auth_service.common.dto.TokenRequest;
 import be.school.portal.auth_service.common.utils.SecurityContextUtil;
 import jakarta.annotation.Nonnull;
-import java.util.concurrent.CompletableFuture;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional(propagation = Propagation.REQUIRES_NEW)
+@Slf4j
 public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
 
   private final UserRepositoryPort userRepositoryPort;
@@ -55,7 +56,6 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
    * </ul>
    *
    * @param tokenRequest the request containing the token to revoke
-   * @return a completed {@link CompletableFuture} when revocation is done
    * @throws org.springframework.security.authentication.BadCredentialsException if the token is
    *     invalid or not a refresh token
    * @throws org.springframework.security.access.AccessDeniedException if the token's username does
@@ -64,7 +64,7 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
    */
   @Override
   @Async
-  public CompletableFuture<Void> revoke(@Nonnull TokenRequest tokenRequest) {
+  public void revoke(@Nonnull TokenRequest tokenRequest) {
 
     // Extract token from request
     final var refreshToken = tokenRequest.token();
@@ -93,7 +93,5 @@ public class UserTokenRevokeUseCaseImpl implements UserTokenRevokeUseCase {
 
     // Revoke the token
     userTokenRevokeService.revoke(existingUser, refreshTokenData.jti());
-
-    return CompletableFuture.completedFuture(null);
   }
 }

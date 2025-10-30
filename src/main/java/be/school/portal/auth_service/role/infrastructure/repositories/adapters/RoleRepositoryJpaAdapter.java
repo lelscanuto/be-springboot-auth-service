@@ -1,16 +1,18 @@
 package be.school.portal.auth_service.role.infrastructure.repositories.adapters;
 
-import be.school.portal.auth_service.common.aspect.Trace;
+import be.school.portal.auth_service.common.annotations.Trace;
 import be.school.portal.auth_service.role.application.port.RoleRepositoryPort;
 import be.school.portal.auth_service.role.domain.entities.Role;
 import be.school.portal.auth_service.role.infrastructure.repositories.RoleRepository;
 import jakarta.annotation.Nonnull;
 import java.util.Optional;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
-@Transactional
+@Trace
+@Component
+@Transactional(propagation = Propagation.REQUIRED)
 public class RoleRepositoryJpaAdapter implements RoleRepositoryPort {
 
   private final RoleRepository roleRepository;
@@ -20,19 +22,17 @@ public class RoleRepositoryJpaAdapter implements RoleRepositoryPort {
   }
 
   @Override
-  @Trace
   public Optional<Role> findById(@Nonnull Long roleId) {
     return roleRepository.findById(roleId);
   }
 
   @Override
-  @Trace
   public Role save(@Nonnull Role existingRole) {
     return roleRepository.save(existingRole);
   }
 
   @Override
-  public Boolean existsByName(@Nonnull String name) {
+  public boolean existsByName(@Nonnull String name) {
     return roleRepository.existsByName(name);
   }
 
