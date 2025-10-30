@@ -3,13 +3,12 @@ package be.school.portal.auth_service.account.application.use_cases.impl;
 import be.school.portal.auth_service.account.application.mappers.UserProjectionMapper;
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
 import be.school.portal.auth_service.account.application.use_cases.UserLockUseCase;
-import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.account.domain.enums.UserStatus;
 import be.school.portal.auth_service.account.domain.projections.UserProjection;
+import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,8 +60,7 @@ public class UserLockUseCaseImpl implements UserLockUseCase {
    *     the given username exists
    */
   @Override
-  @Async
-  public CompletableFuture<UserProjection> lockUser(String username) {
+  public UserProjection lockUser(String username) {
 
     LOGGER.debug("Locking user with username: {}", username);
 
@@ -82,6 +80,6 @@ public class UserLockUseCaseImpl implements UserLockUseCase {
 
     LOGGER.debug("Successfully locked user with username: {}", username);
 
-    return CompletableFuture.completedFuture(userProjectionMapper.toUserLiteDTO(existingUser));
+    return userProjectionMapper.toUserLiteDTO(existingUser);
   }
 }

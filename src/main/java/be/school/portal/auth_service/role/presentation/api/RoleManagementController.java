@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.concurrent.CompletableFuture;
 
 @Tag(name = "Role Management", description = "APIs for managing roles")
 public interface RoleManagementController {
@@ -22,7 +23,7 @@ public interface RoleManagementController {
         @ApiResponse(responseCode = "400", description = "Invalid request"),
         @ApiResponse(responseCode = "409", description = "Role already exists")
       })
-  RoleResponse createRole(CreateRoleRequest createRoleRequest);
+  CompletableFuture<RoleResponse> createRole(CreateRoleRequest createRoleRequest);
 
   @Operation(
       security = {@SecurityRequirement(name = "bearerAuth")},
@@ -34,7 +35,7 @@ public interface RoleManagementController {
         @ApiResponse(responseCode = "400", description = "Invalid request"),
         @ApiResponse(responseCode = "404", description = "Role not found")
       })
-  RoleResponse updateRole(Long roleId, UpdateRoleRequest updateRoleRequest);
+  CompletableFuture<RoleResponse> updateRole(Long roleId, UpdateRoleRequest updateRoleRequest);
 
   @Operation(
       security = {@SecurityRequirement(name = "bearerAuth")},
@@ -45,5 +46,5 @@ public interface RoleManagementController {
         @ApiResponse(responseCode = "200", description = "Role deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Role not found")
       })
-  RoleResponse deleteRole(Long roleId);
+  CompletableFuture<RoleResponse> deleteRole(Long roleId);
 }

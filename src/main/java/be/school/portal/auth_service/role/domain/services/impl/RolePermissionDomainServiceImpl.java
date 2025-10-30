@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
  * modifications occur within a transactional context.
  */
 @Service
-@Transactional(propagation = Propagation.REQUIRED)
+@Transactional(propagation = Propagation.MANDATORY)
 public class RolePermissionDomainServiceImpl implements RolePermissionDomainService {
 
   /**

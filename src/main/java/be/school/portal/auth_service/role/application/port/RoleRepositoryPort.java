@@ -9,7 +9,7 @@ public interface RoleRepositoryPort {
 
   Role save(@Nonnull Role existingRole);
 
-  Boolean existsByName(@Nonnull String name);
+  boolean existsByName(@Nonnull String name);
 
   Role delete(@Nonnull Role existingRole);
 }

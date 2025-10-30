@@ -1,8 +1,8 @@
 package be.school.portal.auth_service.account.application.aspects;
 
-import be.school.portal.auth_service.common.dto.LoginRequest;
 import be.school.portal.auth_service.account.application.internal.services.LoginAttemptService;
 import be.school.portal.auth_service.account.domain.enums.LoginAction;
+import be.school.portal.auth_service.common.dto.LoginRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -25,14 +25,14 @@ public class LoginTrackerAspect {
 
   @AfterReturning(
       value =
-          "@annotation( be.school.portal.auth_service.application.annotations.TrackLogin) && args(loginRequest,..)")
+          "@annotation( be.school.portal.auth_service.account.application.aspects.TrackLogin) && args(loginRequest,..)")
   public void afterSuccess(LoginRequest loginRequest) {
     loginAttemptService.recordSuccess(loginRequest.username(), LoginAction.LOGIN_SUCCESS);
   }
 
   @AfterThrowing(
       value =
-          "@annotation(be.school.portal.auth_service.application.annotations.TrackLogin) && args(loginRequest,..)",
+          "@annotation( be.school.portal.auth_service.account.application.aspects.TrackLogin) && args(loginRequest,..)",
       throwing = "ex")
   public void afterFailure(LoginRequest loginRequest, Exception ex) {
     loginAttemptService.recordFailure(loginRequest.username(), getLoginActionFromException(ex));

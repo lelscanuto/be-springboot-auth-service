@@ -32,13 +32,10 @@ public class UserLockEventListener {
    */
   @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
   public void handleEvent(UserLockEventDTO userLockEventDTO) {
-    userLockUseCase
-        .lockUser(userLockEventDTO.username())
-        .exceptionally(
-            error -> {
-              LOGGER.debug("Failed to lock user: {}", userLockEventDTO.username(), error);
-              return null;
-            });
+
+    LOGGER.info("Locking user: {}", userLockEventDTO.username());
+
+    userLockUseCase.lockUser(userLockEventDTO.username());
   }
 
   /**
