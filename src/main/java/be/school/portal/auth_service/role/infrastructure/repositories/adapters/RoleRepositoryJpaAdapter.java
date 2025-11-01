@@ -47,7 +47,7 @@ public class RoleRepositoryJpaAdapter implements RoleRepositoryPort {
   }
 
   @Override
-  public List<Role> findAllByIsDeletedFalseAndPermissions_Id(@Nonnull Long permissionId) {
+  public List<Role> findAllByIsDeletedFalseAndPermissionsId(@Nonnull Long permissionId) {
     return roleRepository.findAllByIsDeletedFalseAndPermissions_Id(permissionId);
   }
 

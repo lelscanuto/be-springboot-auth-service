@@ -3,6 +3,7 @@ package be.school.portal.auth_service.role.application.use_cases.impl;
 import be.school.portal.auth_service.account.application.use_cases.UserLookUpUseCase;
 import be.school.portal.auth_service.role.application.port.RoleRepositoryPort;
 import be.school.portal.auth_service.role.application.use_cases.RoleDeleteUseCase;
+import be.school.portal.auth_service.role.application.use_cases.RoleLookUpUseCase;
 import be.school.portal.auth_service.role.domain.entities.Role;
 import be.school.portal.auth_service.role.domain.exceptions.RoleAssignedToActiveUserException;
 import be.school.portal.auth_service.role.domain.exceptions.RoleNotFoundException;
@@ -40,6 +41,7 @@ import org.springframework.validation.annotation.Validated;
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class RoleDeleteUseCaseImpl implements RoleDeleteUseCase {
 
+  private final RoleLookUpUseCase roleLookUpUseCase;
   private final RoleRepositoryPort roleRepositoryPort;
   private final UserLookUpUseCase userLookUpUseCase;
 
@@ -50,7 +52,10 @@ public class RoleDeleteUseCaseImpl implements RoleDeleteUseCase {
    * @param userLookUpUseCase the use case for checking user-role relationships
    */
   public RoleDeleteUseCaseImpl(
-      RoleRepositoryPort roleRepositoryPort, UserLookUpUseCase userLookUpUseCase) {
+      RoleLookUpUseCase roleLookUpUseCase,
+      RoleRepositoryPort roleRepositoryPort,
+      UserLookUpUseCase userLookUpUseCase) {
+    this.roleLookUpUseCase = roleLookUpUseCase;
     this.roleRepositoryPort = roleRepositoryPort;
     this.userLookUpUseCase = userLookUpUseCase;
   }
@@ -75,8 +80,7 @@ public class RoleDeleteUseCaseImpl implements RoleDeleteUseCase {
   public Role delete(@NotNull @Nonnull Long roleId) {
 
     // Verify role exists
-    final var existingRole =
-        roleRepositoryPort.findById(roleId).orElseThrow(() -> RoleNotFoundException.ofId(roleId));
+    final var existingRole = roleLookUpUseCase.findById(roleId);
 
     // Check if role is assigned to any user
     if (userLookUpUseCase.existsByRole(existingRole.getName())) {

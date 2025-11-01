@@ -31,7 +31,7 @@ public class RolePermissionLookUpUseCaseImpl implements RolePermissionLookUpUseC
 
   @Override
   public boolean isPermissionUsed(Long permissionId) {
-    return !roleRepositoryPort.findAllByIsDeletedFalseAndPermissions_Id(permissionId).isEmpty();
+    return !roleRepositoryPort.findAllByIsDeletedFalseAndPermissionsId(permissionId).isEmpty();
   }
 
   @Override

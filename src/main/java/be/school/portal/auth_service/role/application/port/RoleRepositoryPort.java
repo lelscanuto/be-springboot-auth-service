@@ -17,7 +17,7 @@ public interface RoleRepositoryPort {
 
   Role delete(@Nonnull Role existingRole);
 
-  List<Role> findAllByIsDeletedFalseAndPermissions_Id(@Nonnull Long permissionId);
+  List<Role> findAllByIsDeletedFalseAndPermissionsId(@Nonnull Long permissionId);
 
   Page<Role> findAll(Specification<Role> and, Pageable pageable);
 }

@@ -2,6 +2,7 @@ package be.school.portal.auth_service.role.application.use_cases.impl;
 
 import be.school.portal.auth_service.common.dto.UpdateRoleRequest;
 import be.school.portal.auth_service.role.application.port.RoleRepositoryPort;
+import be.school.portal.auth_service.role.application.use_cases.RoleLookUpUseCase;
 import be.school.portal.auth_service.role.application.use_cases.RoleUpdateUseCase;
 import be.school.portal.auth_service.role.domain.entities.Role;
 import be.school.portal.auth_service.role.domain.exceptions.RoleNotFoundException;
@@ -33,9 +34,12 @@ import org.springframework.validation.annotation.Validated;
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class RoleUpdateUseCaseImpl implements RoleUpdateUseCase {
 
+  private final RoleLookUpUseCase roleLookUpUseCase;
   private final RoleRepositoryPort roleRepositoryPort;
 
-  public RoleUpdateUseCaseImpl(RoleRepositoryPort roleRepositoryPort) {
+  public RoleUpdateUseCaseImpl(
+      RoleLookUpUseCase roleLookUpUseCase, RoleRepositoryPort roleRepositoryPort) {
+    this.roleLookUpUseCase = roleLookUpUseCase;
     this.roleRepositoryPort = roleRepositoryPort;
   }
 
@@ -56,8 +60,7 @@ public class RoleUpdateUseCaseImpl implements RoleUpdateUseCase {
       @NotNull @Nonnull Long roleId, @Valid @Nonnull UpdateRoleRequest updateRoleRequest) {
 
     // Retrieve existing role
-    final var existingRole =
-        roleRepositoryPort.findById(roleId).orElseThrow(() -> RoleNotFoundException.ofId(roleId));
+    final var existingRole = roleLookUpUseCase.findById(roleId);
 
     // Update role fields
     existingRole.setName(updateRoleRequest.name());
