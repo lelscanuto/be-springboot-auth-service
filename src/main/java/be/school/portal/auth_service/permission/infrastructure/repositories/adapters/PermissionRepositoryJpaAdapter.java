@@ -6,6 +6,9 @@ import be.school.portal.auth_service.permission.domain.entities.Permission;
 import be.school.portal.auth_service.permission.infrastructure.repositories.PermissionRepository;
 import jakarta.annotation.Nonnull;
 import java.util.Optional;
+import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,5 +27,27 @@ public class PermissionRepositoryJpaAdapter implements PermissionRepositoryPort 
   @Override
   public Optional<Permission> findById(@Nonnull Long permissionId) {
     return permissionRepository.findById(permissionId);
+  }
+
+  @Override
+  public Permission delete(@Nonnull Permission existingPermission) {
+    permissionRepository.delete(existingPermission);
+
+    return existingPermission;
+  }
+
+  @Override
+  public boolean existsByName(String permissionName) {
+    return permissionRepository.existsByName(permissionName);
+  }
+
+  @Override
+  public Permission save(Permission permission) {
+    return permissionRepository.save(permission);
+  }
+
+  @Override
+  public Page<Permission> findAllByIdIn(Set<Long> ids, Pageable pageable) {
+    return permissionRepository.findAllByIdIn(ids, pageable);
   }
 }

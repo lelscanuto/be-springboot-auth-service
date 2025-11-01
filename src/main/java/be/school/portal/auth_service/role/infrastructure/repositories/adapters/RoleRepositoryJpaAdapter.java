@@ -5,7 +5,11 @@ import be.school.portal.auth_service.role.application.port.RoleRepositoryPort;
 import be.school.portal.auth_service.role.domain.entities.Role;
 import be.school.portal.auth_service.role.infrastructure.repositories.RoleRepository;
 import jakarta.annotation.Nonnull;
+import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,5 +44,15 @@ public class RoleRepositoryJpaAdapter implements RoleRepositoryPort {
   public Role delete(@Nonnull Role existingRole) {
     existingRole.delete();
     return roleRepository.save(existingRole);
+  }
+
+  @Override
+  public List<Role> findAllByIsDeletedFalseAndPermissions_Id(@Nonnull Long permissionId) {
+    return roleRepository.findAllByIsDeletedFalseAndPermissions_Id(permissionId);
+  }
+
+  @Override
+  public Page<Role> findAll(Specification<Role> specification, Pageable pageable) {
+    return roleRepository.findAll(specification, pageable);
   }
 }

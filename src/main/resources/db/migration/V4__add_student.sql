@@ -29,9 +29,6 @@ UPDATE role
 SET created_at = NOW(), updated_at = NOW(), created_by = 'system', updated_by = 'system'
 WHERE name = 'STUDENT';
 
-UPDATE permission
-SET created_at = NOW(), updated_at = NOW(), created_by = 'system', updated_by = 'system'
-WHERE name IN ('VIEW_PROFILE', 'UPDATE_PROFILE', 'ENROLL_COURSE');
 
 UPDATE user_account
 SET created_at = NOW(), updated_at = NOW(), created_by = 'system', updated_by = 'system'
