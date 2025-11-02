@@ -90,4 +90,4 @@ http://localhost:8081/swagger-ui/index.html#/
 
 You can view the generated API documentation here:
 
-[📘 View API Docs](docs/api-doc.html)
+[📘 View API Docs](https://lelscanuto.github.io/be-springboot-auth-service/)
