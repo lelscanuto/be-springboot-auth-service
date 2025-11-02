@@ -239,7 +239,7 @@
                                 <mkdir dir="${project.basedir}/docs"/>
                                 <copy
                                         file="${project.build.directory}/generated-docs/index.html"
-                                        tofile="${project.basedir}/docs/api-doc.html"
+                                        tofile="${project.basedir}/docs/index.html"
                                         overwrite="true"
                                 />
                             </target>
