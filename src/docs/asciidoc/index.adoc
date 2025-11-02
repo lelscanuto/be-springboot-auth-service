@@ -1,0 +1,54 @@
+= School Portal Auth Service API Documentation
+:doctype: book
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: highlightjs
+:sectanchors:
+:snippets: {projectdir}/target/generated-snippets
+
+== Overview
+This document provides API documentation for the **Authentication Service** of the School Portal.
+All endpoints are documented with example requests and responses.
+
+== Authentication
+
+=== 1. Successful Login
+[cols="1,3"]
+|===
+| Method | POST
+| Endpoint | `/api/v1/auth/login`
+| Description | Authenticates a valid user and returns access tokens.
+|===
+
+==== Request
+include::{snippets}/login-successful/http-request.adoc[]
+
+==== Response
+include::{snippets}/login-successful/http-response.adoc[]
+
+==== Example Request Body
+include::{snippets}/login-successful/request-body.adoc[]
+
+==== Example Response Body
+include::{snippets}/login-successful/response-body.adoc[]
+
+=== 2. Failed Login
+[cols="1,3"]
+|===
+| Method | POST
+| Endpoint | `/api/v1/auth/login`
+| Description | Returns HTTP 401 Unauthorized when credentials are invalid.
+|===
+
+==== Request
+include::{snippets}/login-failed/http-request.adoc[]
+
+==== Response
+include::{snippets}/login-failed/http-response.adoc[]
+
+==== Example Request Body
+include::{snippets}/login-failed/request-body.adoc[]
+
+==== Example Response Body
+include::{snippets}/login-failed/response-body.adoc[]

@@ -11,6 +11,6 @@ public interface RoleResponseMapper {
 
   @Mapping(source = "id", target = "id")
   @Mapping(source = "name", target = "name")
+  @Mapping(source = "deleted", target = "isDeleted")
   RoleResponse toRoleResponse(Role role);
-  
 }
