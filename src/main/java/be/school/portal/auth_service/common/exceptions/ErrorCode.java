@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
+  USER_NOT_FOUND(HttpStatus.NOT_FOUND),
   PERMISSION_ALREADY_EXISTS(HttpStatus.CONFLICT),
   PERMISSION_NOT_FOUND(HttpStatus.NOT_FOUND),
   PERMISSION_STILL_ASSIGNED_TO_ACTIVE_ROLE(HttpStatus.UNPROCESSABLE_ENTITY),
