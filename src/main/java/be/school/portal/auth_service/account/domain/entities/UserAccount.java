@@ -3,7 +3,6 @@ package be.school.portal.auth_service.account.domain.entities;
 import be.school.portal.auth_service.account.domain.enums.UserStatus;
 import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
 import be.school.portal.auth_service.common.entities.AuditableEntity;
-import be.school.portal.auth_service.permission.domain.entities.Permission;
 import be.school.portal.auth_service.role.domain.entities.Role;
 import jakarta.persistence.*;
 import java.util.HashSet;
@@ -53,12 +52,6 @@ public class UserAccount extends AuditableEntity {
   @Setter(AccessLevel.NONE)
   private Set<RefreshToken> refreshTokens = new HashSet<>();
 
-  public Set<Permission> getAllPermissions() {
-    return roles.stream()
-        .flatMap(role -> role.getPermissions().stream())
-        .collect(Collectors.toSet());
-  }
-
   public void addRefreshToken(RefreshToken refreshToken) {
     this.refreshTokens.add(refreshToken);
     refreshToken.setUser(this);
@@ -71,10 +64,6 @@ public class UserAccount extends AuditableEntity {
 
   public Set<String> getRoleNames() {
     return roles.stream().map(Role::getName).collect(Collectors.toSet());
-  }
-
-  public boolean isActive() {
-    return this.status == UserStatus.ACTIVE;
   }
 
   public RefreshToken getRefreshTokensWithId(long refreshTokenId) {

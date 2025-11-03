@@ -1,6 +1,6 @@
 package be.school.portal.auth_service.common.config;
 
-import be.school.portal.auth_service.account.application.internal.services.impl.JwtAuthenticationServiceImpl;
+import be.school.portal.auth_service.account.application.internal.services.AuthenticationService;
 import be.school.portal.auth_service.common.builders.ProblemDetailFactory;
 import be.school.portal.auth_service.common.handler.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,12 +28,12 @@ public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final ObjectMapper objectMapper;
-  private final JwtAuthenticationServiceImpl jwtAuthenticationProvider;
+  private final AuthenticationService jwtAuthenticationProvider;
 
   public SecurityConfig(
       JwtAuthenticationFilter jwtAuthenticationFilter,
       ObjectMapper objectMapper,
-      JwtAuthenticationServiceImpl jwtAuthenticationProvider) {
+      AuthenticationService jwtAuthenticationProvider) {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     this.objectMapper = objectMapper;
     this.jwtAuthenticationProvider = jwtAuthenticationProvider;

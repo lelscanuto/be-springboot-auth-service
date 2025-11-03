@@ -1,12 +1,11 @@
 package be.school.portal.auth_service.account.application.use_cases.impl;
 
-import be.school.portal.auth_service.account.application.mappers.UserProjectionMapper;
+import be.school.portal.auth_service.account.application.port.UserCachingPort;
 import be.school.portal.auth_service.account.application.port.UserRepositoryPort;
 import be.school.portal.auth_service.account.application.use_cases.UserLockUseCase;
+import be.school.portal.auth_service.account.application.use_cases.UserLookUpUseCase;
+import be.school.portal.auth_service.account.domain.entities.UserAccount;
 import be.school.portal.auth_service.account.domain.enums.UserStatus;
-import be.school.portal.auth_service.account.domain.projections.UserProjection;
-import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
-import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,16 +13,49 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Use case implementation responsible for locking user accounts.
+ * Application service (use case) responsible for enforcing user account locking policies.
  *
- * <p>This class is part of the application domain layer and provides functionality to mark a user
- * account as {@code LOCKED}. Locking may occur as a result of multiple failed login attempts,
- * administrative action, or other business rules.
+ * <p>This class is part of the <strong>application layer</strong> and encapsulates the business
+ * logic required to mark a user account as {@link
+ * be.school.portal.auth_service.account.domain.enums.UserStatus#LOCKED}. Account locking may occur
+ * as a result of:
  *
- * <p>Execution of this use case is asynchronous to avoid blocking the main workflow (for example,
- * login request handling).
+ * <ul>
+ *   <li>Exceeding the maximum number of failed login attempts
+ *   <li>Administrative security enforcement
+ *   <li>Policy-driven rules or automated fraud detection workflows
+ * </ul>
  *
- * <p>The method is transactional to ensure atomic updates to the user's account state.
+ * <p>The use case operates in its own transactional context ({@code REQUIRES_NEW}) to ensure that
+ * the locking operation is atomic and independent of the caller’s transaction. This guarantees that
+ * a user lock persists even if the initiating transaction is rolled back.
+ *
+ * <p>Execution is intended to be asynchronous (usually triggered via an application event) to
+ * prevent blocking user-facing operations such as login attempts.
+ *
+ * <p>This implementation interacts with:
+ *
+ * <ul>
+ *   <li>{@link be.school.portal.auth_service.account.application.use_cases.UserLookUpUseCase} for
+ *       retrieving user data
+ *   <li>{@link be.school.portal.auth_service.account.application.port.UserRepositoryPort} for
+ *       persistence operations
+ *   <li>{@link be.school.portal.auth_service.account.application.port.UserCachingPort} for cache
+ *       synchronization
+ * </ul>
+ *
+ * <h3>Thread Safety</h3>
+ *
+ * <p>This service is thread-safe due to its stateless design and reliance on Spring-managed
+ * transactional boundaries.
+ *
+ * <h3>Example Usage</h3>
+ *
+ * <pre>{@code
+ * userLockUseCase.lockUser("john.doe");
+ * }</pre>
+ *
+ * @author Francis Jorell J. Canuto
  */
 @Service
 @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -31,55 +63,65 @@ public class UserLockUseCaseImpl implements UserLockUseCase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UserLockUseCaseImpl.class);
 
+  private final UserLookUpUseCase userLookUpUseCase;
   private final UserRepositoryPort userRepositoryPort;
-  private final UserProjectionMapper userProjectionMapper;
+  private final UserCachingPort userCachingPort;
 
   /**
-   * Constructs the use case with required dependencies.
+   * Constructs a new instance of {@link UserLockUseCaseImpl} with the required dependencies.
    *
-   * @param userRepositoryPort the repository for accessing and persisting user entities
-   * @param userProjectionMapper the mapper for converting user entities to lightweight DTOs
+   * @param userLookUpUseCase the use case responsible for retrieving user details from persistent
+   *     storage
+   * @param userRepositoryPort the repository port abstraction for persisting user entities
+   * @param userCachingPort the port responsible for maintaining user cache consistency
    */
   public UserLockUseCaseImpl(
-      UserRepositoryPort userRepositoryPort, UserProjectionMapper userProjectionMapper) {
+      UserLookUpUseCase userLookUpUseCase,
+      UserRepositoryPort userRepositoryPort,
+      UserCachingPort userCachingPort) {
+    this.userLookUpUseCase = userLookUpUseCase;
     this.userRepositoryPort = userRepositoryPort;
-    this.userProjectionMapper = userProjectionMapper;
+    this.userCachingPort = userCachingPort;
   }
 
   /**
-   * Locks a user account by setting its {@link UserStatus} to {@code LOCKED}.
+   * Locks the specified user account by updating its status to {@link
+   * be.school.portal.auth_service.account.domain.enums.UserStatus#LOCKED}.
    *
-   * <p>If the specified user cannot be found, a {@link
-   * org.springframework.security.core.userdetails.UsernameNotFoundException} is thrown. This method
-   * executes asynchronously in a separate thread to prevent blocking the caller.
+   * <p>This method ensures that the operation is:
    *
-   * @param username the username of the account to lock
-   * @return a {@link CompletableFuture} containing a {@link UserProjection} representation of the
-   *     locked user
-   * @throws org.springframework.security.core.userdetails.UsernameNotFoundException if no user with
-   *     the given username exists
+   * <ul>
+   *   <li><strong>Atomic</strong> — performed in its own transaction to avoid partial updates
+   *   <li><strong>Idempotent</strong> — repeated invocations on an already locked user will result
+   *       in the same state
+   *   <li><strong>Consistent</strong> — ensures that both persistent and cached representations
+   *       reflect the locked state
+   * </ul>
+   *
+   * @param username the unique username of the account to be locked
+   * @return the updated {@link be.school.portal.auth_service.account.domain.entities.UserAccount}
+   *     instance representing the locked user
+   * @throws org.springframework.security.core.userdetails.UsernameNotFoundException if the
+   *     specified user cannot be found
    */
   @Override
-  public UserProjection lockUser(String username) {
-
-    LOGGER.debug("Locking user with username: {}", username);
+  public UserAccount lockUser(String username) {
+    LOGGER.debug("Initiating lock operation for user: {}", username);
 
     // Retrieve the existing user or throw an exception if not found
-    final var existingUser =
-        userRepositoryPort
-            .findByUsername(username)
-            .orElseThrow(
-                () ->
-                    SecurityExceptionFactory.UsernameNotFoundExceptionFactory.ofUsername(username));
+    final var existingUser = userLookUpUseCase.findByUsername(username);
 
     // Update the user's status to LOCKED
     existingUser.setStatus(UserStatus.LOCKED);
 
-    // Persist the changes to the database
+    // Persist the updated user state
     userRepositoryPort.save(existingUser);
 
-    LOGGER.debug("Successfully locked user with username: {}", username);
+    // Update the user cache to ensure consistency
+    userCachingPort.updateCache(existingUser);
 
-    return userProjectionMapper.toUserLiteDTO(existingUser);
+    LOGGER.debug("Successfully locked user account: {}", username);
+
+    return existingUser;
   }
 }
