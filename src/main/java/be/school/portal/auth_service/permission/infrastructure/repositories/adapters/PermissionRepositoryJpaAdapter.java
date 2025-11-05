@@ -1,6 +1,7 @@
 package be.school.portal.auth_service.permission.infrastructure.repositories.adapters;
 
 import be.school.portal.auth_service.common.annotations.Trace;
+import be.school.portal.auth_service.common.logging.LoggerName;
 import be.school.portal.auth_service.permission.application.ports.PermissionRepositoryPort;
 import be.school.portal.auth_service.permission.domain.entities.Permission;
 import be.school.portal.auth_service.permission.infrastructure.repositories.PermissionRepository;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@Trace
+@Trace(logger = LoggerName.REPOSITORY_LOGGER)
 @Component
 @Transactional(propagation = Propagation.REQUIRED)
 public class PermissionRepositoryJpaAdapter implements PermissionRepositoryPort {

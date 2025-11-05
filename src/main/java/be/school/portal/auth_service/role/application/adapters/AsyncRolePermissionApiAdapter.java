@@ -2,6 +2,7 @@ package be.school.portal.auth_service.role.application.adapters;
 
 import be.school.portal.auth_service.common.annotations.Trace;
 import be.school.portal.auth_service.common.dto.RoleResponse;
+import be.school.portal.auth_service.common.logging.LoggerName;
 import be.school.portal.auth_service.role.application.mappers.RoleResponseMapper;
 import be.school.portal.auth_service.role.application.use_cases.RoleAddPermissionUseCase;
 import be.school.portal.auth_service.role.application.use_cases.RoleRemovePermissionUseCase;
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Service;
  * for external consumption.
  */
 @Service
-@Trace(logArgsAndResult = true)
+@Trace(logger = LoggerName.ADAPTER_LOGGER)
 public class AsyncRolePermissionApiAdapter implements RolePermissionFacade {
 
   private final RoleAddPermissionUseCase roleAddPermissionUseCase;

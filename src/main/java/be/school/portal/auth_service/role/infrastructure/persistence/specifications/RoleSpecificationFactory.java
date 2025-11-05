@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.role.infrastructure.specifications;
+package be.school.portal.auth_service.role.infrastructure.persistence.specifications;
 
 import be.school.portal.auth_service.role.domain.entities.Role;
 import jakarta.annotation.Nullable;

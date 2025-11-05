@@ -3,6 +3,7 @@ package be.school.portal.auth_service.permission.application.adapters;
 import be.school.portal.auth_service.common.annotations.Trace;
 import be.school.portal.auth_service.common.dto.CreatePermissionRequest;
 import be.school.portal.auth_service.common.dto.PermissionResponse;
+import be.school.portal.auth_service.common.logging.LoggerName;
 import be.school.portal.auth_service.permission.application.mappers.PermissionResponseMapper;
 import be.school.portal.auth_service.permission.application.use_cases.PermissionCreateUseCase;
 import be.school.portal.auth_service.permission.application.use_cases.PermissionDeleteUseCase;
@@ -12,7 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
-@Trace(logArgsAndResult = true)
+@Trace(logger = LoggerName.ADAPTER_LOGGER)
 public class AsyncPermissionManagementApiAdapter implements PermissionManagementFacade {
 
   private final PermissionCreateUseCase permissionCreateUseCase;

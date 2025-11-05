@@ -9,6 +9,7 @@ import be.school.portal.auth_service.common.annotations.Trace;
 import be.school.portal.auth_service.common.dto.LoginRequest;
 import be.school.portal.auth_service.common.dto.LoginResponse;
 import be.school.portal.auth_service.common.dto.TokenRequest;
+import be.school.portal.auth_service.common.logging.LoggerName;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ import org.springframework.stereotype.Service;
  * @author Francis Jorell Canuto
  */
 @Service
-@Trace(logArgsAndResult = true)
+@Trace(logger = LoggerName.ADAPTER_LOGGER)
 public class AsyncUserAuthenticationApiAdapter implements UserAuthenticationFacade {
 
   private final UserLoginUseCase userLoginUseCase;

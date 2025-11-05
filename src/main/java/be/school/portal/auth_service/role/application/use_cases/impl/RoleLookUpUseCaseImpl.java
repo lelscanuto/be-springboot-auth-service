@@ -1,12 +1,12 @@
 package be.school.portal.auth_service.role.application.use_cases.impl;
 
-import static be.school.portal.auth_service.role.infrastructure.specifications.RoleSpecificationFactory.byStatus;
+import static be.school.portal.auth_service.role.infrastructure.persistence.specifications.RoleSpecificationFactory.byStatus;
 
 import be.school.portal.auth_service.role.application.port.RoleRepositoryPort;
 import be.school.portal.auth_service.role.application.use_cases.RoleLookUpUseCase;
 import be.school.portal.auth_service.role.domain.entities.Role;
 import be.school.portal.auth_service.role.domain.exceptions.RoleNotFoundException;
-import be.school.portal.auth_service.role.infrastructure.specifications.RoleSpecificationFactory;
+import be.school.portal.auth_service.role.infrastructure.persistence.specifications.RoleSpecificationFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.springframework.data.domain.Page;

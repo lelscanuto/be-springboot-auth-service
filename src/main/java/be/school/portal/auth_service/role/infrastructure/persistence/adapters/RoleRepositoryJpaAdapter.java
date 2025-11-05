@@ -1,9 +1,10 @@
-package be.school.portal.auth_service.role.infrastructure.repositories.adapters;
+package be.school.portal.auth_service.role.infrastructure.persistence.adapters;
 
 import be.school.portal.auth_service.common.annotations.Trace;
+import be.school.portal.auth_service.common.logging.LoggerName;
 import be.school.portal.auth_service.role.application.port.RoleRepositoryPort;
 import be.school.portal.auth_service.role.domain.entities.Role;
-import be.school.portal.auth_service.role.infrastructure.repositories.RoleRepository;
+import be.school.portal.auth_service.role.infrastructure.persistence.repositories.RoleRepository;
 import jakarta.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@Trace
+@Trace(logger = LoggerName.REPOSITORY_LOGGER)
 @Component
 @Transactional(propagation = Propagation.REQUIRED)
 public class RoleRepositoryJpaAdapter implements RoleRepositoryPort {

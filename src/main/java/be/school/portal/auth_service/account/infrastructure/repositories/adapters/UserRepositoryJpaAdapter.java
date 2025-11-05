@@ -4,13 +4,14 @@ import be.school.portal.auth_service.account.application.port.UserRepositoryPort
 import be.school.portal.auth_service.account.domain.entities.UserAccount;
 import be.school.portal.auth_service.account.infrastructure.repositories.UserRepository;
 import be.school.portal.auth_service.common.annotations.Trace;
+import be.school.portal.auth_service.common.logging.LoggerName;
 import jakarta.annotation.Nonnull;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@Trace
+@Trace(logger = LoggerName.REPOSITORY_LOGGER)
 @Component
 @Transactional(propagation = Propagation.REQUIRED)
 public class UserRepositoryJpaAdapter implements UserRepositoryPort {

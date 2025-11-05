@@ -1,4 +1,4 @@
-package be.school.portal.auth_service.role.infrastructure.repositories;
+package be.school.portal.auth_service.role.infrastructure.persistence.repositories;
 
 import be.school.portal.auth_service.role.domain.entities.Role;
 import java.util.List;

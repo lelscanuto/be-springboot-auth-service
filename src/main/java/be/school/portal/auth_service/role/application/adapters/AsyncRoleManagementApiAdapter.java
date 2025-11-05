@@ -4,6 +4,7 @@ import be.school.portal.auth_service.common.annotations.Trace;
 import be.school.portal.auth_service.common.dto.CreateRoleRequest;
 import be.school.portal.auth_service.common.dto.RoleResponse;
 import be.school.portal.auth_service.common.dto.UpdateRoleRequest;
+import be.school.portal.auth_service.common.logging.LoggerName;
 import be.school.portal.auth_service.role.application.mappers.RoleResponseMapper;
 import be.school.portal.auth_service.role.application.use_cases.RoleCreateUseCase;
 import be.school.portal.auth_service.role.application.use_cases.RoleDeleteUseCase;
@@ -15,7 +16,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
-@Trace(logArgsAndResult = true)
+@Trace(logger = LoggerName.ADAPTER_LOGGER)
 public class AsyncRoleManagementApiAdapter implements RoleManagementFacade {
 
   private final RoleCreateUseCase roleCreateUseCase;

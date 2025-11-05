@@ -1,9 +1,9 @@
 package be.school.portal.auth_service.common.security;
 
 import be.school.portal.auth_service.account.application.port.UserCachingPort;
-import be.school.portal.auth_service.account.domain.exception.UserNotFoundException;
 import be.school.portal.auth_service.account.domain.projections.UserProjection;
 import be.school.portal.auth_service.common.builders.SecurityExceptionFactory;
+import java.util.Objects;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -67,17 +67,13 @@ public class CustomUserDetailsService implements UserDetailsService {
    */
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    UserProjection userProjection;
+    UserProjection  userProjection = userCachingPort.findByUsername(username);
 
-    try {
-      // Attempt to retrieve the user projection from the caching port
-      userProjection = userCachingPort.findByUsername(username);
-    } catch (UserNotFoundException ex) {
-      // If the user is not found, throw a UsernameNotFoundException
+    if (Objects.isNull(userProjection)) {
       throw SecurityExceptionFactory.UsernameNotFoundExceptionFactory.ofUsername(username);
     }
 
-    // return a CustomUserDetails
-    return new CustomUserDetails(userProjection);
+      // return a CustomUserDetails
+      return new CustomUserDetails(userProjection);
   }
 }

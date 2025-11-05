@@ -66,7 +66,7 @@ public class UserCachingRedisAdapter implements UserCachingPort {
    * @return the {@link UserProjection} associated with the username, or {@code null} if not found
    */
   @Override
-  @Cacheable(value = CachingConfig.USER_CACHE_NAME, key = "#username")
+  @Cacheable(value = CachingConfig.USER_CACHE_NAME, key = "#username", unless = "#result == null")
   public UserProjection findByUsername(@Nonnull String username) {
     final var existingUser = userRepositoryPort.findByUsername(username).orElse(null);
     return userProjectionMapper.toUserLiteDTO(existingUser);

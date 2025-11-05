@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <!-- Spring properties -->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="unknown-service"/>
+    <!-- Use a default value for KAFKA_BOOTSTRAP_SERVER for safety -->
+    <springProperty scope="context" name="KAFKA_BOOTSTRAP_SERVER" source="kafka.bootstrap-servers"
+                    defaultValue="localhost:9092"/>
+
+    <!-- Base log pattern for console -->
+    <property name="DEFAULT_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [traceId=%X{traceId}, spanId=%X{spanId}], %msg%n"/>
+
+
+    <property name="TRACE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [service=${APP_NAME}] - [traceId=%X{traceId}, spanId=%X{spanId}], %msg%n"/>
+
+
+    <!-- Console appenders -->
+    <appender name="DEFAULT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${DEFAULT_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="TRACE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${TRACE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <appender name="KAFKA_REPOSITORY" class="io.github.bullettooth.logback.kafka.KafkaAppender">
+        <topic>repository-logs</topic>
+
+
+        <!-- Define each producer property in its own <producerConfig> tag -->
+        <producerConfig>bootstrap.servers=${KAFKA_BOOTSTRAP_SERVER}</producerConfig>
+        <producerConfig>acks=0</producerConfig>
+        <producerConfig>key.serializer=org.apache.kafka.common.serialization.StringSerializer</producerConfig>
+        <producerConfig>value.serializer=org.apache.kafka.common.serialization.ByteArraySerializer</producerConfig>
+
+
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</pattern>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+
+                <pattern>
+                    <pattern>{
+                        "service": "${APP_NAME}",
+                        "level": "%level",
+                        "logger": "%logger",
+                        "thread": "%thread"
+                        }
+                    </pattern>
+                </pattern>
+
+                <mdc>
+                    <includeMdcKeyName>traceId</includeMdcKeyName>
+                    <includeMdcKeyName>spanId</includeMdcKeyName>
+                </mdc>
+
+                <arguments/>
+
+                <stackTrace>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>-1</maxDepthPerThrowable>
+                    </throwableConverter>
+                </stackTrace>
+            </providers>
+
+        </encoder>
+    </appender>
+
+
+    <appender name="KAFKA_ADAPTER" class="io.github.bullettooth.logback.kafka.KafkaAppender">
+        <topic>adapter-logs</topic>
+
+        <producerConfig>bootstrap.servers=${KAFKA_BOOTSTRAP_SERVER}</producerConfig>
+        <producerConfig>acks=0</producerConfig>
+        <producerConfig>key.serializer=org.apache.kafka.common.serialization.StringSerializer</producerConfig>
+        <producerConfig>value.serializer=org.apache.kafka.common.serialization.ByteArraySerializer</producerConfig>
+
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</pattern>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+
+                <pattern>
+                    <pattern>{
+                        "service": "${APP_NAME}",
+                        "level": "%level",
+                        "logger": "%logger",
+                        "thread": "%thread"
+                        }
+                    </pattern>
+                </pattern>
+
+                <mdc>
+                    <includeMdcKeyName>traceId</includeMdcKeyName>
+                    <includeMdcKeyName>spanId</includeMdcKeyName>
+                </mdc>
+
+                <arguments/>
+
+                <message/>
+
+                <stackTrace>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>-1</maxDepthPerThrowable>
+                    </throwableConverter>
+                </stackTrace>
+
+            </providers>
+
+        </encoder>
+    </appender>
+
+    <!-- ASYNC Appender for ADAPTER logs (wraps KAFKA_BASE) -->
+    <appender name="ASYNC_KAFKA_ADAPTER" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- neverBlock=true prevents the app thread from waiting if Kafka is slow/down -->
+        <neverBlock>true</neverBlock>
+        <queueSize>512</queueSize>
+        <!-- Reference the base appender, setting the specific topic override -->
+        <appender-ref ref="KAFKA_ADAPTER">
+        </appender-ref>
+    </appender>
+
+    <!-- ASYNC Appender for REPOSITORY logs (wraps KAFKA_BASE) -->
+    <appender name="ASYNC_KAFKA_REPOSITORY" class="ch.qos.logback.classic.AsyncAppender">
+        <neverBlock>true</neverBlock>
+        <queueSize>512</queueSize>
+        <appender-ref ref="KAFKA_REPOSITORY">
+        </appender-ref>
+    </appender>
+
+    <!-- Adapter logger (logs to Console TRACE and Async Kafka Adapter) -->
+    <logger name="adapter-logger" level="INFO" additivity="false">
+        <appender-ref ref="TRACE"/>
+        <appender-ref ref="ASYNC_KAFKA_ADAPTER"/>
+    </logger>
+
+    <!-- Repository logger (logs to Console TRACE and Async Kafka Repository) -->
+    <logger name="repository-logger" level="INFO" additivity="false">
+        <appender-ref ref="TRACE"/>
+        <appender-ref ref="ASYNC_KAFKA_REPOSITORY"/>
+    </logger>
+
+    <!-- Root logger (logs only to the default console appender) -->
+    <root level="INFO">
+        <appender-ref ref="DEFAULT"/>
+    </root>
+
+</configuration>

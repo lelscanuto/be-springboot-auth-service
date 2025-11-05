@@ -3,6 +3,7 @@ package be.school.portal.auth_service.role.application.adapters;
 import be.school.portal.auth_service.common.annotations.Trace;
 import be.school.portal.auth_service.common.dto.RolePermissionResponse;
 import be.school.portal.auth_service.common.dto.RoleResponse;
+import be.school.portal.auth_service.common.logging.LoggerName;
 import be.school.portal.auth_service.role.application.mappers.RolePermissionMapper;
 import be.school.portal.auth_service.role.application.mappers.RoleResponseMapper;
 import be.school.portal.auth_service.role.application.use_cases.RoleLookUpUseCase;
@@ -17,7 +18,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
-@Trace(logArgsAndResult = true)
+@Trace(logger = LoggerName.ADAPTER_LOGGER)
 public class AsyncRoleLookUpApiAdapter implements RoleLookUpFacade {
 
   private final RoleLookUpUseCase roleLookUpUseCase;
