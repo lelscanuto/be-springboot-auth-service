@@ -78,7 +78,7 @@
 
 
     <appender name="KAFKA_ADAPTER" class="io.github.bullettooth.logback.kafka.KafkaAppender">
-        <topic>adapter-logs</topic>
+        <topic>api-logs</topic>
 
         <producerConfig>bootstrap.servers=${KAFKA_BOOTSTRAP_SERVER}</producerConfig>
         <producerConfig>acks=0</producerConfig>
