@@ -19,7 +19,7 @@ import org.springframework.util.StopWatch;
 public class TraceAspect {
 
   private static final String REPOSITORY_LOGGER = "repository-logger";
-  private static final String ADAPTER_LOGGER = "adapter-logger";
+  private static final String API_LOGGER = "api-logger";
   private static final String DEFAULT_LOGGER = "root";
 
   private static final String EXECUTION_TIME = "executionTime";
@@ -29,7 +29,7 @@ public class TraceAspect {
   private static String getLoggerName(LoggerName logger) {
     return switch (logger) {
       case REPOSITORY_LOGGER -> REPOSITORY_LOGGER;
-      case ADAPTER_LOGGER -> ADAPTER_LOGGER;
+      case API_LOGGER -> API_LOGGER;
       case DEFAULT -> DEFAULT_LOGGER;
     };
   }
@@ -72,7 +72,7 @@ public class TraceAspect {
                 "[{}ms, {}, {}] {}{}",
                 kv(EXECUTION_TIME, execTime),
                 kv(METHOD_NAME, methodName),
-                kv(IS_SUCCESS, false),
+                kv(IS_SUCCESS, true),
                 maskedArgs,
                 maskedResult);
           } else {
@@ -109,14 +109,14 @@ public class TraceAspect {
         "[{}ms, {}, {}] {}{}",
         kv(EXECUTION_TIME, execTime),
         kv(METHOD_NAME, methodName),
-        kv(IS_SUCCESS, false),
+        kv(IS_SUCCESS, true),
         maskedArgs,
         maskedResult);
   }
 
   // Determine if we should log both request and result
   private static boolean isLogRequestAndResult(Trace log) {
-    return log.logger() == LoggerName.ADAPTER_LOGGER;
+    return log.logger() == LoggerName.API_LOGGER;
   }
 
   @Around("@within(trace)")

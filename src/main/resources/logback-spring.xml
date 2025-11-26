@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true">
 
-    <!-- Spring properties -->
-    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="unknown-service"/>
     <!-- Use a default value for KAFKA_BOOTSTRAP_SERVER for safety -->
     <springProperty scope="context" name="KAFKA_BOOTSTRAP_SERVER" source="kafka.bootstrap-servers"
                     defaultValue="localhost:9092"/>
@@ -13,7 +11,7 @@
 
 
     <property name="TRACE_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [service=${APP_NAME}] - [traceId=%X{traceId}, spanId=%X{spanId}], %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [traceId=%X{traceId}, spanId=%X{spanId}], %msg%n"/>
 
 
     <!-- Console appenders -->
@@ -51,7 +49,6 @@
 
                 <pattern>
                     <pattern>{
-                        "service": "${APP_NAME}",
                         "level": "%level",
                         "logger": "%logger",
                         "thread": "%thread"
@@ -96,7 +93,6 @@
 
                 <pattern>
                     <pattern>{
-                        "service": "${APP_NAME}",
                         "level": "%level",
                         "logger": "%logger",
                         "thread": "%thread"
@@ -143,7 +139,7 @@
     </appender>
 
     <!-- Adapter logger (logs to Console TRACE and Async Kafka Adapter) -->
-    <logger name="adapter-logger" level="INFO" additivity="false">
+    <logger name="api-logger" level="INFO" additivity="false">
         <appender-ref ref="TRACE"/>
         <appender-ref ref="ASYNC_KAFKA_ADAPTER"/>
     </logger>
