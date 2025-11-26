@@ -36,7 +36,7 @@ import org.springframework.stereotype.Service;
  * @author Francis Jorell Canuto
  */
 @Service
-@Trace(logger = LoggerName.ADAPTER_LOGGER)
+@Trace(logger = LoggerName.API_LOGGER)
 public class AsyncUserAuthenticationApiAdapter implements UserAuthenticationFacade {
 
   private final UserLoginUseCase userLoginUseCase;

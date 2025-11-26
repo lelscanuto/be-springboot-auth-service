@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
  * for external consumption.
  */
 @Service
-@Trace(logger = LoggerName.ADAPTER_LOGGER)
+@Trace(logger = LoggerName.API_LOGGER)
 public class AsyncRolePermissionApiAdapter implements RolePermissionFacade {
 
   private final RoleAddPermissionUseCase roleAddPermissionUseCase;

@@ -18,7 +18,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
-@Trace(logger = LoggerName.ADAPTER_LOGGER)
+@Trace(logger = LoggerName.API_LOGGER)
 public class AsyncRoleLookUpApiAdapter implements RoleLookUpFacade {
 
   private final RoleLookUpUseCase roleLookUpUseCase;
